@@ -21,7 +21,6 @@ return new class extends Migration
                 $table->decimal('average_value', 18, 2)->default(0);
                 $table->timestamps();
 
-                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
                 $table->unique(['user_id', 'aggregation_period', 'activity_type', 'period_start', 'period_end']);
                 $table->index(['user_id', 'aggregation_period']);
                 $table->index(['activity_type', 'period_start']);
