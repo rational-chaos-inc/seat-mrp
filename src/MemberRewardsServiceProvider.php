@@ -36,6 +36,9 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
 
+        // Delete Spatie's republished permission migrations BEFORE they're discovered
+        $this->deleteSpatiePermissionMigrations();
+
         $this->registerServices();
     }
 
@@ -43,8 +46,6 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     {
         $this->publishConfig();
         $this->publishMigrations();
-        $this->guardSpatiePermissionMigrations();
-        $this->listenForMigrationEvents();
         $this->registerRoutes();
         $this->registerViews();
         $this->bootPermissions();
@@ -80,43 +81,24 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         ], 'migrations');
     }
 
-    private function guardSpatiePermissionMigrations(): void
+    private function deleteSpatiePermissionMigrations(): void
     {
         // Spatie republishes its migration stub with a new timestamp, causing conflicts.
-        // Mark Spatie permission migrations as "handled" in migrations table if tables exist.
-        if (! \Illuminate\Support\Facades\Schema::hasTable('migrations')) {
+        // Delete unguarded Spatie permission migrations since our 2000_01_01_000000 migration
+        // handles all Spatie junction table creation with proper guards.
+        $migrationPath = @database_path('migrations');
+        if (!is_dir($migrationPath)) {
             return;
         }
 
-        $db = \Illuminate\Support\Facades\DB::table('migrations');
-        $migrationPath = database_path('migrations');
         $spatieMigrations = glob($migrationPath . '/*_create_permission_tables.php');
-
-        // If permissions table exists and Spatie migration hasn't run yet, mark it as run
-        if (\Illuminate\Support\Facades\Schema::hasTable('permissions')) {
-            foreach ($spatieMigrations as $file) {
-                $basename = basename($file);
-                $exists = $db->where('migration', $basename)->exists();
-
-                if (! $exists) {
-                    // Mark this Spatie migration as already run to skip it
-                    $db->insert([
-                        'migration' => $basename,
-                        'batch' => $db->max('batch') + 1,
-                    ]);
-                }
+        foreach ($spatieMigrations as $file) {
+            $content = @file_get_contents($file);
+            // Only delete if it's unguarded Spatie migration (not our guard)
+            if ($content && strpos($content, 'if (!Schema::hasTable') === false &&
+                strpos($content, "Schema::create('permissions'") !== false) {
+                @unlink($file);
             }
-        }
-    }
-
-    private function listenForMigrationEvents(): void
-    {
-        // As a backup, watch for any Spatie permission table creation errors
-        // This handles edge cases where the migration somehow still tries to run
-        if (class_exists(\Illuminate\Database\Events\MigrationsStarted::class)) {
-            $this->app['events']->listen(\Illuminate\Database\Events\MigrationsStarted::class, function () {
-                $this->guardSpatiePermissionMigrations();
-            });
         }
     }
 
