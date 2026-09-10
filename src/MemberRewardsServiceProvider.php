@@ -44,6 +44,7 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         $this->publishConfig();
         $this->publishMigrations();
         $this->guardSpatiePermissionMigrations();
+        $this->listenForMigrationEvents();
         $this->registerRoutes();
         $this->registerViews();
         $this->bootPermissions();
@@ -82,25 +83,40 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     private function guardSpatiePermissionMigrations(): void
     {
         // Spatie republishes its migration stub with a new timestamp, causing conflicts.
-        // Rewrite unguarded Spatie migrations to be empty no-ops since our
-        // 2000_01_01_000000_ensure_spatie_permission_tables handles everything.
+        // Mark Spatie permission migrations as "handled" in migrations table if tables exist.
+        if (! \Illuminate\Support\Facades\Schema::hasTable('migrations')) {
+            return;
+        }
+
+        $db = \Illuminate\Support\Facades\DB::table('migrations');
         $migrationPath = database_path('migrations');
         $spatieMigrations = glob($migrationPath . '/*_create_permission_tables.php');
 
-        foreach ($spatieMigrations as $file) {
-            $content = file_get_contents($file);
+        // If permissions table exists and Spatie migration hasn't run yet, mark it as run
+        if (\Illuminate\Support\Facades\Schema::hasTable('permissions')) {
+            foreach ($spatieMigrations as $file) {
+                $basename = basename($file);
+                $exists = $db->where('migration', $basename)->exists();
 
-            // Only rewrite if it's unguarded Spatie migration (not our guard, not already safe)
-            if (strpos($content, 'if (!Schema::hasTable') === false &&
-                strpos($content, "Schema::create('permissions'") !== false) {
-                // Replace the up() method to be a no-op
-                $content = preg_replace(
-                    '/public function up\(\): void\s*\{[^}]*\}/s',
-                    'public function up(): void { /* Handled by 2000_01_01_000000_ensure_spatie_permission_tables */ }',
-                    $content
-                );
-                file_put_contents($file, $content);
+                if (! $exists) {
+                    // Mark this Spatie migration as already run to skip it
+                    $db->insert([
+                        'migration' => $basename,
+                        'batch' => $db->max('batch') + 1,
+                    ]);
+                }
             }
+        }
+    }
+
+    private function listenForMigrationEvents(): void
+    {
+        // As a backup, watch for any Spatie permission table creation errors
+        // This handles edge cases where the migration somehow still tries to run
+        if (class_exists(\Illuminate\Database\Events\MigrationsStarted::class)) {
+            $this->app['events']->listen(\Illuminate\Database\Events\MigrationsStarted::class, function () {
+                $this->guardSpatiePermissionMigrations();
+            });
         }
     }
 
