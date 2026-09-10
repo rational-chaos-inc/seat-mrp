@@ -8,23 +8,25 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::createIfNotExists('member_rewards_activity_aggregation_caches', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('aggregation_period')->comment('day, week, month, quarter, year, custom');
-            $table->enum('activity_type', ['mining', 'pvp_kill', 'pvp_loss', 'tax_wallet', 'all']);
-            $table->date('period_start');
-            $table->date('period_end');
-            $table->decimal('total_value', 18, 2)->default(0);
-            $table->integer('count')->default(0);
-            $table->decimal('average_value', 18, 2)->default(0);
-            $table->timestamps();
+        if (!Schema::hasTable('member_rewards_activity_aggregation_caches')) {
+            Schema::create('member_rewards_activity_aggregation_caches', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id');
+                $table->string('aggregation_period')->comment('day, week, month, quarter, year, custom');
+                $table->enum('activity_type', ['mining', 'pvp_kill', 'pvp_loss', 'tax_wallet', 'all']);
+                $table->date('period_start');
+                $table->date('period_end');
+                $table->decimal('total_value', 18, 2)->default(0);
+                $table->integer('count')->default(0);
+                $table->decimal('average_value', 18, 2)->default(0);
+                $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->unique(['user_id', 'aggregation_period', 'activity_type', 'period_start', 'period_end']);
-            $table->index(['user_id', 'aggregation_period']);
-            $table->index(['activity_type', 'period_start']);
-        });
+                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+                $table->unique(['user_id', 'aggregation_period', 'activity_type', 'period_start', 'period_end']);
+                $table->index(['user_id', 'aggregation_period']);
+                $table->index(['activity_type', 'period_start']);
+            });
+        }
     }
 
     public function down(): void

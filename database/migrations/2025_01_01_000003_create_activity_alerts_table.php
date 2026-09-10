@@ -8,19 +8,21 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::createIfNotExists('member_rewards_activity_alerts', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->enum('alert_type', ['activity_threshold', 'unusual_activity', 'member_alert']);
-            $table->json('conditions')->comment('Filters: activity types, value thresholds, time windows');
-            $table->enum('notification_method', ['in_app', 'email', 'webhook'])->default('in_app');
-            $table->boolean('is_active')->default(true);
-            $table->timestamp('last_triggered_at')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('member_rewards_activity_alerts')) {
+            Schema::create('member_rewards_activity_alerts', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id');
+                $table->enum('alert_type', ['activity_threshold', 'unusual_activity', 'member_alert']);
+                $table->json('conditions')->comment('Filters: activity types, value thresholds, time windows');
+                $table->enum('notification_method', ['in_app', 'email', 'webhook'])->default('in_app');
+                $table->boolean('is_active')->default(true);
+                $table->timestamp('last_triggered_at')->nullable();
+                $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->index(['user_id', 'is_active']);
-        });
+                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+                $table->index(['user_id', 'is_active']);
+            });
+        }
     }
 
     public function down(): void
