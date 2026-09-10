@@ -2,7 +2,7 @@
 
 namespace RCI\MemberRewards;
 
-use Illuminate\Support\ServiceProvider;
+use Seat\Services\AbstractSeatPlugin;
 use RCI\MemberRewards\Services\ActivityCollectionService;
 use RCI\MemberRewards\Services\AggregationService;
 use RCI\MemberRewards\Services\ESIActivityService;
@@ -10,7 +10,7 @@ use RCI\MemberRewards\Services\TaxWalletActivityService;
 use RCI\MemberRewards\Services\MiningActivityService;
 use RCI\MemberRewards\Services\ManagerCoreIntegrationService;
 
-class MemberRewardsServiceProvider extends ServiceProvider
+class MemberRewardsServiceProvider extends AbstractSeatPlugin
 {
     public function register(): void
     {
@@ -28,6 +28,8 @@ class MemberRewardsServiceProvider extends ServiceProvider
         $this->registerPermissions();
         $this->registerCommands();
         $this->registerSchedules();
+        $this->registerSidebar();
+        $this->registerMenus();
         $this->registerManagerCoreIntegration();
     }
 
@@ -58,13 +60,16 @@ class MemberRewardsServiceProvider extends ServiceProvider
 
     private function registerRoutes(): void
     {
-        if ($this->app['router']->hasGroup('web')) {
-            $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        // Don't load routes if they're cached
+        if ($this->app->routesAreCached()) {
+            return;
         }
 
-        if ($this->app['router']->hasGroup('api')) {
-            $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
-        }
+        // Load web routes
+        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+
+        // Load API routes
+        $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
     }
 
     private function registerViews(): void
@@ -105,23 +110,33 @@ class MemberRewardsServiceProvider extends ServiceProvider
 
     private function registerSchedules(): void
     {
-        if ($this->app->runningInConsole()) {
-            $schedule = $this->app->make('Illuminate\Console\Scheduling\Schedule');
+        // Register database seeders with schedule definitions
+        // SeAT handles scheduling through its own schedule management system
+        $this->registerDatabaseSeeders(\RCI\MemberRewards\Database\Seeders\ScheduleSeeder::class);
+    }
 
-            $schedule->command('member-rewards:collect-activities')
-                ->everyFiveMinutes()
-                ->withoutOverlapping()
-                ->onFailure(function () {
-                    \Illuminate\Support\Facades\Log::error('Member Rewards activity collection failed');
-                });
+    private function registerSidebar(): void
+    {
+        // Register sidebar configuration
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/member-rewards.sidebar.php',
+            'package.sidebar'
+        );
+    }
 
-            $schedule->command('member-rewards:check-alerts')
-                ->everyFiveMinutes()
-                ->withoutOverlapping()
-                ->onFailure(function () {
-                    \Illuminate\Support\Facades\Log::error('Member Rewards alert check failed');
-                });
-        }
+    private function registerMenus(): void
+    {
+        // Register character submenu
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/member-rewards.character.menu.php',
+            'web.character.menu_items'
+        );
+
+        // Register corporation submenu
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/member-rewards.corporation.menu.php',
+            'web.corporation.menu_items'
+        );
     }
 
     private function registerManagerCoreIntegration(): void

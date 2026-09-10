@@ -24,6 +24,7 @@ class ManagerCoreIntegrationService
         }
 
         try {
+            $this->registerPricingPreferences();
             $this->subscribeToCharacterEvents();
             $this->subscribeToMiningEvents();
             $this->subscribeToESIEvents();
@@ -33,6 +34,27 @@ class ManagerCoreIntegrationService
             Log::error("Failed to register Manager-Core integration", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
+    private function registerPricingPreferences(): void
+    {
+        try {
+            // Register default pricing preference for this plugin
+            // Users can override via Manager-Core configuration
+            if (class_exists('ManagerCore\Models\PricingPreference')) {
+                \ManagerCore\Models\PricingPreference::registerDefault(
+                    self::PLUGIN_KEY,
+                    'jita',  // Default to Jita market
+                    'sell'   // Use sell price for conservative valuation
+                );
+
+                Log::debug("Pricing preferences registered");
+            }
+        } catch (\Exception $e) {
+            Log::debug("Could not register pricing preferences", [
+                'error' => $e->getMessage(),
             ]);
         }
     }
