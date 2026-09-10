@@ -16,7 +16,8 @@
   },
   "autoload": {
     "psr-4": {
-      "RCI\\MemberRewards\\": "src/"
+      "RCI\\MemberRewards\\": "src/",
+      "RCI\\MemberRewards\\Database\\": "database/"
     }
   },
   "extra": {
