@@ -22,11 +22,11 @@ return new class extends Migration
                 $table->timestamps();
 
                 // Indexes for performance
-                $table->index(['character_id', 'activity_timestamp']);
-                $table->index(['user_id', 'activity_timestamp']);
-                $table->index(['activity_type', 'activity_timestamp']);
-                $table->index(['corporation_id', 'activity_timestamp']);
-                $table->unique(['activity_type', 'source_id'])->whereNotNull('source_id');
+                $table->index(['character_id', 'activity_timestamp'], 'idx_char_ts');
+                $table->index(['user_id', 'activity_timestamp'], 'idx_user_ts');
+                $table->index(['activity_type', 'activity_timestamp'], 'idx_type_ts');
+                $table->index(['corporation_id', 'activity_timestamp'], 'idx_corp_ts');
+                $table->unique(['activity_type', 'source_id'], 'uniq_type_src')->whereNotNull('source_id');
             });
         }
     }

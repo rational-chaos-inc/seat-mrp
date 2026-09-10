@@ -21,9 +21,9 @@ return new class extends Migration
                 $table->decimal('average_value', 18, 2)->default(0);
                 $table->timestamps();
 
-                $table->unique(['user_id', 'aggregation_period', 'activity_type', 'period_start', 'period_end']);
-                $table->index(['user_id', 'aggregation_period']);
-                $table->index(['activity_type', 'period_start']);
+                $table->unique(['user_id', 'aggregation_period', 'activity_type', 'period_start', 'period_end'], 'uniq_agg');
+                $table->index(['user_id', 'aggregation_period'], 'idx_user_period');
+                $table->index(['activity_type', 'period_start'], 'idx_type_start');
             });
         }
     }
