@@ -24,6 +24,7 @@ class ManagerCoreIntegrationService
         }
 
         try {
+            $this->registerWithPluginBridge();
             $this->registerPricingPreferences();
             $this->subscribeToCharacterEvents();
             $this->subscribeToMiningEvents();
@@ -34,6 +35,18 @@ class ManagerCoreIntegrationService
             Log::error("Failed to register Manager-Core integration", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
+    private function registerWithPluginBridge(): void
+    {
+        // Register this plugin with Manager-Core's PluginBridge for UI visibility
+        if (class_exists(\ManagerCore\Services\PluginBridge::class)) {
+            $bridge = app(\ManagerCore\Services\PluginBridge::class);
+            $bridge->registerSelf(self::PLUGIN_KEY, [
+                'version' => '1.0.20',
+                'description' => 'Track corporation member activity across mining, PvP, and tax contributions',
             ]);
         }
     }
