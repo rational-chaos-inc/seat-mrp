@@ -82,47 +82,18 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     private function guardSpatiePermissionMigrations(): void
     {
         // Spatie republishes its migration stub on each vendor:publish with a new timestamp,
-        // causing duplicate table creation errors. Find and guard the latest one.
+        // causing multiple unguarded migrations that conflict with each other.
+        // Delete them since our 2000_01_01_000000 migration handles all Spatie junction tables.
         $migrationPath = database_path('migrations');
         $spatieMigrations = glob($migrationPath . '/*_create_permission_tables.php');
 
         foreach ($spatieMigrations as $file) {
-            // Only modify if it doesn't already have guards
+            // Only delete if it's from Spatie (contains Schema::create without guards)
             $content = file_get_contents($file);
-            if (strpos($content, 'Schema::hasTable') === false) {
-                // Add guards to each create table statement
-                $content = str_replace(
-                    "Schema::create('permissions'",
-                    "if (!Schema::hasTable('permissions')) {\n            Schema::create('permissions'",
-                    $content
-                );
-                $content = str_replace(
-                    "Schema::create('roles'",
-                    "if (!Schema::hasTable('roles')) {\n            Schema::create('roles'",
-                    $content
-                );
-                $content = str_replace(
-                    "Schema::create('model_has_permissions'",
-                    "if (!Schema::hasTable('model_has_permissions')) {\n            Schema::create('model_has_permissions'",
-                    $content
-                );
-                $content = str_replace(
-                    "Schema::create('model_has_roles'",
-                    "if (!Schema::hasTable('model_has_roles')) {\n            Schema::create('model_has_roles'",
-                    $content
-                );
-                $content = str_replace(
-                    "Schema::create('role_has_permissions'",
-                    "if (!Schema::hasTable('role_has_permissions')) {\n            Schema::create('role_has_permissions'",
-                    $content
-                );
-                // Close the guards
-                $content = str_replace(
-                    "});\n        }",
-                    "});\n        }\n        }",
-                    $content
-                );
-                file_put_contents($file, $content);
+            if (strpos($content, 'if (!Schema::hasTable') === false &&
+                strpos($content, "Schema::create('permissions'") !== false) {
+                // This is an unguarded Spatie migration; delete it
+                @unlink($file);
             }
         }
     }
