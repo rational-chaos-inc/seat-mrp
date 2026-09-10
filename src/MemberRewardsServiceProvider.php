@@ -36,10 +36,33 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
 
-        // Delete Spatie's republished permission migrations BEFORE they're discovered
-        $this->deleteSpatiePermissionMigrations();
+        // Delete Spatie's republished permission migrations before Laravel discovers them.
+        // Spatie publishes with new timestamp on each vendor:publish, causing conflicts.
+        // Our 2000_01_01_000000 migration handles all junction tables with proper guards.
+        $this->cleanupSpatiePermissionMigrations();
 
         $this->registerServices();
+    }
+
+    private function cleanupSpatiePermissionMigrations(): void
+    {
+        $migrationPath = @database_path('migrations');
+        if (!is_dir($migrationPath)) {
+            return;
+        }
+
+        // Find and delete unguarded Spatie permission migrations
+        $files = @glob($migrationPath . '/*_create_permission_tables.php') ?: [];
+        foreach ($files as $file) {
+            $content = @file_get_contents($file) ?: '';
+            // Skip if already guarded or if it's not a Spatie migration
+            if (strpos($content, 'if (!Schema::hasTable') !== false ||
+                strpos($content, "Schema::create('permissions'") === false) {
+                continue;
+            }
+            // Delete unguarded Spatie migration to prevent conflicts
+            @unlink($file);
+        }
     }
 
     public function boot(): void
@@ -79,27 +102,6 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         $this->publishes([
             __DIR__ . '/../database/migrations' => database_path('migrations'),
         ], 'migrations');
-    }
-
-    private function deleteSpatiePermissionMigrations(): void
-    {
-        // Spatie republishes its migration stub with a new timestamp, causing conflicts.
-        // Delete unguarded Spatie permission migrations since our 2000_01_01_000000 migration
-        // handles all Spatie junction table creation with proper guards.
-        $migrationPath = @database_path('migrations');
-        if (!is_dir($migrationPath)) {
-            return;
-        }
-
-        $spatieMigrations = glob($migrationPath . '/*_create_permission_tables.php');
-        foreach ($spatieMigrations as $file) {
-            $content = @file_get_contents($file);
-            // Only delete if it's unguarded Spatie migration (not our guard)
-            if ($content && strpos($content, 'if (!Schema::hasTable') === false &&
-                strpos($content, "Schema::create('permissions'") !== false) {
-                @unlink($file);
-            }
-        }
     }
 
     private function registerRoutes(): void
