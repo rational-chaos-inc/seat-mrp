@@ -27,6 +27,11 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         return 'rci/member-rewards';
     }
 
+    public function getPackagistVendorName(): string
+    {
+        return 'rci';
+    }
+
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
