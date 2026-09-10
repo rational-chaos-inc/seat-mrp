@@ -25,7 +25,7 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         $this->publishMigrations();
         $this->registerRoutes();
         $this->registerViews();
-        $this->registerPermissions();
+        $this->bootPermissions();
         $this->registerCommands();
         $this->registerSchedules();
         $this->registerSidebar();
@@ -81,7 +81,7 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         ], 'views');
     }
 
-    private function registerPermissions(): void
+    private function bootPermissions(): void
     {
         if (class_exists(\Spatie\Permission\Models\Permission::class)) {
             $permissions = [
