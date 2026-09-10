@@ -104,17 +104,22 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     private function bootPermissions(): void
     {
         if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            $permissions = [
-                'view_own_activities',
-                'view_all_activities',
-                'configure_alerts',
-                'manage_member_rewards',
-            ];
+            try {
+                $permissions = [
+                    'view_own_activities',
+                    'view_all_activities',
+                    'configure_alerts',
+                    'manage_member_rewards',
+                ];
 
-            foreach ($permissions as $permission) {
-                if (!\Spatie\Permission\Models\Permission::where('name', $permission)->exists()) {
-                    \Spatie\Permission\Models\Permission::create(['name' => $permission]);
+                foreach ($permissions as $permission) {
+                    if (!\Spatie\Permission\Models\Permission::where('name', $permission)->exists()) {
+                        \Spatie\Permission\Models\Permission::create(['name' => $permission]);
+                    }
                 }
+            } catch (\Exception $e) {
+                // Table may not exist yet during initial installation
+                // Permissions will be created after migrations run
             }
         }
     }
