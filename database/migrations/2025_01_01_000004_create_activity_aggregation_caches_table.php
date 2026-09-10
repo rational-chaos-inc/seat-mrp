@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('member_rewards_activity_aggregation_caches', function (Blueprint $table) {
+        Schema::createIfNotExists('member_rewards_activity_aggregation_caches', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('aggregation_period')->comment('day, week, month, quarter, year, custom');

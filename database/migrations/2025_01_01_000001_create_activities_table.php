@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('member_rewards_activities', function (Blueprint $table) {
+        Schema::createIfNotExists('member_rewards_activities', function (Blueprint $table) {
             $table->id();
             $table->timestamp('activity_timestamp')->comment('When the activity occurred in-game');
             $table->unsignedBigInteger('user_id')->nullable();
