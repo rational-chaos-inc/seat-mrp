@@ -81,19 +81,25 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
 
     private function guardSpatiePermissionMigrations(): void
     {
-        // Spatie republishes its migration stub on each vendor:publish with a new timestamp,
-        // causing multiple unguarded migrations that conflict with each other.
-        // Delete them since our 2000_01_01_000000 migration handles all Spatie junction tables.
+        // Spatie republishes its migration stub with a new timestamp, causing conflicts.
+        // Rewrite unguarded Spatie migrations to be empty no-ops since our
+        // 2000_01_01_000000_ensure_spatie_permission_tables handles everything.
         $migrationPath = database_path('migrations');
         $spatieMigrations = glob($migrationPath . '/*_create_permission_tables.php');
 
         foreach ($spatieMigrations as $file) {
-            // Only delete if it's from Spatie (contains Schema::create without guards)
             $content = file_get_contents($file);
+
+            // Only rewrite if it's unguarded Spatie migration (not our guard, not already safe)
             if (strpos($content, 'if (!Schema::hasTable') === false &&
                 strpos($content, "Schema::create('permissions'") !== false) {
-                // This is an unguarded Spatie migration; delete it
-                @unlink($file);
+                // Replace the up() method to be a no-op
+                $content = preg_replace(
+                    '/public function up\(\): void\s*\{[^}]*\}/s',
+                    'public function up(): void { /* Handled by 2000_01_01_000000_ensure_spatie_permission_tables */ }',
+                    $content
+                );
+                file_put_contents($file, $content);
             }
         }
     }
