@@ -12,6 +12,21 @@ use RCI\MemberRewards\Services\ManagerCoreIntegrationService;
 
 class MemberRewardsServiceProvider extends AbstractSeatPlugin
 {
+    public function getName(): string
+    {
+        return 'SeAT Member Rewards Programme';
+    }
+
+    public function getPackageRepositoryUrl(): string
+    {
+        return 'https://github.com/rational-chaos-inc/seat-mrp';
+    }
+
+    public function getPackagistPackageName(): string
+    {
+        return 'rci/member-rewards';
+    }
+
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
