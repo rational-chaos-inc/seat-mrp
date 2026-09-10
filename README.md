@@ -16,20 +16,162 @@ A SeAT plugin for tracking corporation member activity across mining, PvP combat
 
 ## Installation
 
+### Prerequisites
+- SeAT 5.x (Laravel 10)
+- PHP 8.1+
+- Database with migration support
+- Redis or queue driver (for scheduled jobs)
+- EVE Online ESI API access (for kills/losses)
+- Mining-Manager plugin (for mining data) - optional but recommended
+
+### Step-by-Step Installation
+
+1. **Add to your SeAT installation**
+
+   For development/local testing:
+   ```bash
+   # Add to composer.json repositories section
+   "repositories": [
+       {
+           "type": "vcs",
+           "url": "https://github.com/rational-chaos-inc/seat-mrp.git"
+       }
+   ]
+   ```
+
+   Then install:
+   ```bash
+   composer require rci/member-rewards
+   ```
+
+2. **Publish configuration and views**
+   ```bash
+   php artisan vendor:publish --tag=member-rewards-config
+   php artisan vendor:publish --tag=member-rewards-views
+   ```
+
+3. **Run database migrations**
+   ```bash
+   php artisan migrate
+   ```
+
+4. **Seed scheduled tasks** (via database seeder)
+   ```bash
+   php artisan db:seed --class="\RCI\MemberRewards\Database\Seeders\ScheduleSeeder"
+   ```
+
+5. **Configure permissions** (if using role-based access)
+   - Log into SeAT admin panel
+   - Go to: Admin → Permissions & Roles
+   - Assign `view_own_activities` to members
+   - Assign `view_all_activities` to directors
+
+6. **Configure scheduler** (if not already running)
+
+   Ensure Laravel's task scheduler runs every minute:
+   ```bash
+   * * * * * cd /path/to/seat && php artisan schedule:run >> /dev/null 2>&1
+   ```
+
+   Or use the SeAT Scheduler UI if available:
+   - Admin → Scheduler
+
+7. **Verify installation**
+   ```bash
+   # Check if service provider is registered
+   php artisan list | grep member-rewards
+
+   # Verify permissions exist
+   php artisan tinker
+   >>> \Spatie\Permission\Models\Permission::where('name', 'like', '%member-rewards%')->get()
+
+   # Verify schedule is registered (if Manager-Core available)
+   php artisan manager-core:diagnose --detailed
+   ```
+
+### Optional: Manager-Core Integration
+
+To enable real-time activity updates and cross-plugin communication:
+
 ```bash
-composer require rci/member-rewards
+composer require seatplus/manager-core
 php artisan migrate
-php artisan vendor:publish --tag=member-rewards-config
 ```
+
+The plugin will auto-detect Manager-Core and enable:
+- Real-time kill/loss detection (~2 minutes vs 20-30 minutes)
+- Mining data via events
+- Cross-plugin alerts
 
 ## Configuration
 
 Edit `config/member-rewards.php` to configure:
-- Polling intervals for data collection
-- Cache TTL for aggregations
-- ESI retry settings
-- Supported time windows
-- Manager-Core integration
+
+```php
+return [
+    'enabled' => env('MEMBER_REWARDS_ENABLED', true),
+    'polling_interval' => env('MEMBER_REWARDS_POLLING_INTERVAL', 5),  // minutes
+    'aggregation_cache_ttl' => env('MEMBER_REWARDS_CACHE_TTL', 0),     // seconds (0 = disabled)
+    'esi.retry_attempts' => 3,
+    'esi.retry_delay_seconds' => 2,
+    'time_windows' => ['day', 'week', 'month', 'quarter', 'year'],
+    'activity_types' => ['mining', 'pvp_kill', 'pvp_loss', 'tax_wallet'],
+    'manager_core_integration' => true,
+    'alerts.enabled' => true,
+    'alerts.check_interval' => 5,  // minutes
+];
+```
+
+## Post-Installation
+
+### Start collecting activities
+Activities begin collecting automatically every 5 minutes via scheduled job. First run should complete within 5 minutes depending on corporation size.
+
+### Monitor collection
+```bash
+# View recent collection logs
+php artisan tinker
+>>> \Illuminate\Support\Facades\Log::tail('laravel.log', 50)
+
+# Or via file
+tail -f storage/logs/laravel.log | grep 'member-rewards'
+```
+
+### Access the plugin
+- **Member Dashboard:** `/member-rewards/dashboard`
+- **Director Dashboard:** `/member-rewards/director` (requires `view_all_activities` permission)
+- **League Tables:** `/member-rewards/league-tables`
+- **API:** `/api/member-rewards/...`
+
+## Uninstallation
+
+To remove the plugin:
+
+```bash
+# Disable the plugin from SeAT admin or composer.json
+composer remove rci/member-rewards
+
+# Remove database tables (careful!)
+php artisan migrate:rollback --path=vendor/rci/member-rewards/database/migrations
+```
+
+## Troubleshooting
+
+**Activities not collecting:**
+- Check scheduler is running: `php artisan schedule:list`
+- Check logs: `storage/logs/laravel.log`
+- Verify characters have ESI tokens: SeAT Admin → Characters
+- Check ESI API status: https://status.eve-esi.com/
+
+**No permissions appearing:**
+- Run migration: `php artisan migrate`
+- Seed permissions: `php artisan db:seed --class="\RCI\MemberRewards\Database\Seeders\ScheduleSeeder"`
+- Clear config cache: `php artisan config:cache`
+
+**Manager-Core integration not working:**
+- Verify MC installed: `composer show seatplus/manager-core`
+- Check MC is bootstrapped: `php artisan list | grep manager-core`
+- Run diagnostic: `php artisan manager-core:diagnose --detailed`
 
 ## Architecture
 
