@@ -33,7 +33,6 @@ return new class extends Migration
         // Create role_has_permissions table if it doesn't exist
         if (!Schema::hasTable('role_has_permissions')) {
             Schema::create('role_has_permissions', function (Blueprint $table) {
-                $table->id();
                 $table->unsignedBigInteger('permission_id');
                 $table->unsignedBigInteger('role_id');
                 $table->primary(['permission_id', 'role_id']);
@@ -45,7 +44,6 @@ return new class extends Migration
         // Create model_has_permissions table if it doesn't exist
         if (!Schema::hasTable('model_has_permissions')) {
             Schema::create('model_has_permissions', function (Blueprint $table) {
-                $table->id();
                 $table->unsignedBigInteger('permission_id');
                 $table->morphs('model', 32);
                 $table->primary(['permission_id', 'model_id', 'model_type']);
@@ -56,7 +54,6 @@ return new class extends Migration
         // Create model_has_roles table if it doesn't exist
         if (!Schema::hasTable('model_has_roles')) {
             Schema::create('model_has_roles', function (Blueprint $table) {
-                $table->id();
                 $table->unsignedBigInteger('role_id');
                 $table->morphs('model', 32);
                 $table->primary(['role_id', 'model_id', 'model_type']);
