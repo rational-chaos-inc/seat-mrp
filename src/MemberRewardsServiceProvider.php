@@ -36,9 +36,9 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
         $this->registerPermissions(__DIR__ . '/Config/Permissions/member-rewards.permissions.php', 'member-rewards');
-        $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.sidebar.php', 'package.sidebar');
-        $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.character.menu.php', 'web.character.menu_items');
-        $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.corporation.menu.php', 'web.corporation.menu_items');
+        $this->mergeConfigFrom(__DIR__ . '/Config/Menu/package.sidebar.php', 'package.sidebar');
+        $this->mergeConfigFrom(__DIR__ . '/Config/Menu/character.php', 'web.character.menu_items');
+        $this->mergeConfigFrom(__DIR__ . '/Config/Menu/corporation.php', 'web.corporation.menu_items');
 
         // Delete Spatie's republished permission migrations before Laravel discovers them.
         // Spatie publishes with new timestamp on each vendor:publish, causing conflicts.
