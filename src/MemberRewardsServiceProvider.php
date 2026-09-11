@@ -35,6 +35,7 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
+        $this->registerPermissions(__DIR__ . '/Config/Permissions/member-rewards.permissions.php', 'member-rewards');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/package.sidebar.php', 'package.sidebar');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/character.php', 'web.character.menu_items');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/corporation.php', 'web.corporation.menu_items');
@@ -45,7 +46,6 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     public function boot(): void
     {
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'member-rewards');
-        $this->registerPermissions(__DIR__ . '/Config/Permissions/member-rewards.permissions.php', 'member-rewards');
         $this->publishConfig();
         $this->publishMigrations();
         $this->registerRoutes();
