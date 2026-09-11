@@ -34,12 +34,27 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
 
     public function register(): void
     {
+        $this->deleteSpatiePermissionMigrations();
+
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/package.sidebar.php', 'package.sidebar');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/character.php', 'web.character.menu_items');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/corporation.php', 'web.corporation.menu_items');
 
         $this->registerServices();
+    }
+
+    private function deleteSpatiePermissionMigrations(): void
+    {
+        $migrationPath = @database_path('migrations');
+        if (!is_dir($migrationPath)) {
+            return;
+        }
+
+        $files = @glob($migrationPath . '/*_create_permission_tables.php') ?: [];
+        foreach ($files as $file) {
+            @unlink($file);
+        }
     }
 
     public function boot(): void
