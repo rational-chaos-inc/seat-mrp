@@ -8,7 +8,6 @@ use RCI\MemberRewards\Services\AggregationService;
 use RCI\MemberRewards\Services\ESIActivityService;
 use RCI\MemberRewards\Services\TaxWalletActivityService;
 use RCI\MemberRewards\Services\MiningActivityService;
-use RCI\MemberRewards\Services\ManagerCoreIntegrationService;
 
 class MemberRewardsServiceProvider extends AbstractSeatPlugin
 {
@@ -52,7 +51,6 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         $this->registerViews();
         $this->registerCommands();
         $this->registerSchedules();
-        $this->registerManagerCoreIntegration();
     }
 
     private function registerServices(): void
@@ -62,7 +60,6 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         $this->app->singleton(MiningActivityService::class);
         $this->app->singleton(ActivityCollectionService::class);
         $this->app->singleton(AggregationService::class);
-        $this->app->singleton(ManagerCoreIntegrationService::class);
         $this->app->singleton(\RCI\MemberRewards\Services\AlertService::class);
     }
 
@@ -114,10 +111,4 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         $this->registerDatabaseSeeders(\RCI\MemberRewards\Database\Seeders\ScheduleSeeder::class);
     }
 
-    private function registerManagerCoreIntegration(): void
-    {
-        if (class_exists(\ManagerCore\Topics::class)) {
-            $this->app->make(ManagerCoreIntegrationService::class)->register();
-        }
-    }
 }
