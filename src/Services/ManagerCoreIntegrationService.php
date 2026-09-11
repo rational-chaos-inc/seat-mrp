@@ -45,9 +45,24 @@ class ManagerCoreIntegrationService
         if (class_exists(\ManagerCore\Services\PluginBridge::class)) {
             $bridge = app(\ManagerCore\Services\PluginBridge::class);
             $bridge->registerSelf(self::PLUGIN_KEY, [
-                'version' => '1.0.20',
+                'version' => '1.0.21',
                 'description' => 'Track corporation member activity across mining, PvP, and tax contributions',
             ]);
+
+            // Register capabilities so other plugins can query our data
+            $aggregationService = app(\RCI\MemberRewards\Services\AggregationService::class);
+
+            $bridge->registerCapability(
+                self::PLUGIN_KEY,
+                'member-rewards.getCharacterActivities',
+                fn ($characterId, $months = 6) => $aggregationService->aggregateForCharacter($characterId, now()->subMonths($months), now())
+            );
+
+            $bridge->registerCapability(
+                self::PLUGIN_KEY,
+                'member-rewards.getCorporationLeagueTable',
+                fn ($corporationId) => $aggregationService->getLeagueTable($corporationId)
+            );
         }
     }
 

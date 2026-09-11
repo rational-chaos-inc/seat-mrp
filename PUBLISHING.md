@@ -7,6 +7,8 @@ This guide explains how to publish the SeAT Member Rewards Programme to Packagis
 - GitHub account (already have repo)
 - Packagist account (free)
 - Git with tags/releases capability
+- **SeAT 5.x** (Laravel 10) installation for compatibility
+- **PHP 8.1+**
 
 ## Step 1: Create a GitHub Release
 

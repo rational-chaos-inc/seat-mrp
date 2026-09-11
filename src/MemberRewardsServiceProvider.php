@@ -35,6 +35,10 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
+        $this->registerPermissions(__DIR__ . '/Config/Permissions/member-rewards.permissions.php', 'member-rewards');
+        $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.sidebar.php', 'package.sidebar');
+        $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.character.menu.php', 'web.character.menu_items');
+        $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.corporation.menu.php', 'web.corporation.menu_items');
 
         // Delete Spatie's republished permission migrations before Laravel discovers them.
         // Spatie publishes with new timestamp on each vendor:publish, causing conflicts.
@@ -71,11 +75,8 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         $this->publishMigrations();
         $this->registerRoutes();
         $this->registerViews();
-        $this->bootPermissions();
         $this->registerCommands();
         $this->registerSchedules();
-        $this->registerSidebar();
-        $this->registerMenus();
         $this->registerManagerCoreIntegration();
     }
 
@@ -127,29 +128,6 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         ], 'views');
     }
 
-    private function bootPermissions(): void
-    {
-        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            try {
-                $permissions = [
-                    'view_own_activities',
-                    'view_all_activities',
-                    'configure_alerts',
-                    'manage_member_rewards',
-                ];
-
-                foreach ($permissions as $permission) {
-                    if (!\Spatie\Permission\Models\Permission::where('name', $permission)->exists()) {
-                        \Spatie\Permission\Models\Permission::create(['name' => $permission]);
-                    }
-                }
-            } catch (\Exception $e) {
-                // Table may not exist yet during initial installation
-                // Permissions will be created after migrations run
-            }
-        }
-    }
-
     private function registerCommands(): void
     {
         $this->commands([
@@ -164,30 +142,6 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         // Register database seeders with schedule definitions
         // SeAT handles scheduling through its own schedule management system
         $this->registerDatabaseSeeders(\RCI\MemberRewards\Database\Seeders\ScheduleSeeder::class);
-    }
-
-    private function registerSidebar(): void
-    {
-        // Register sidebar configuration
-        $this->mergeConfigFrom(
-            __DIR__ . '/../config/member-rewards.sidebar.php',
-            'package.sidebar'
-        );
-    }
-
-    private function registerMenus(): void
-    {
-        // Register character submenu
-        $this->mergeConfigFrom(
-            __DIR__ . '/../config/member-rewards.character.menu.php',
-            'web.character.menu_items'
-        );
-
-        // Register corporation submenu
-        $this->mergeConfigFrom(
-            __DIR__ . '/../config/member-rewards.corporation.menu.php',
-            'web.corporation.menu_items'
-        );
     }
 
     private function registerManagerCoreIntegration(): void
