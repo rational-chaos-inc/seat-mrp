@@ -53,9 +53,14 @@ class CollectActivitiesCommand extends Command
     private function collectForAllCorporations(): void
     {
         // Get all unique corporations with members
-        $corporations = CharacterInfo::whereNotNull('corporation_id')
+        $corporations = CharacterInfo::whereHas('affiliation', function ($q) {
+                $q->whereNotNull('corporation_id');
+            })
             ->distinct()
-            ->pluck('corporation_id');
+            ->with('affiliation')
+            ->get()
+            ->pluck('affiliation.corporation_id')
+            ->unique();
 
         if ($corporations->isEmpty()) {
             $this->warn("No corporations found with members");
