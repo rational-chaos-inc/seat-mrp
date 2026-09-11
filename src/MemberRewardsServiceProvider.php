@@ -82,11 +82,6 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
 
     private function registerRoutes(): void
     {
-        // Don't load routes if they're cached
-        if ($this->app->routesAreCached()) {
-            return;
-        }
-
         // Load web routes
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 

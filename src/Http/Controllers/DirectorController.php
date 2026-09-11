@@ -35,9 +35,14 @@ class DirectorController
             }
 
             $corporations = $user->characters()
-                ->whereNotNull('corporation_id')
+                ->whereHas('affiliation', function ($q) {
+                    $q->whereNotNull('corporation_id');
+                })
                 ->distinct()
-                ->pluck('corporation_id');
+                ->with('affiliation')
+                ->get()
+                ->pluck('affiliation.corporation_id')
+                ->unique();
 
             if ($corporations->isEmpty()) {
                 return view('member-rewards::dashboard.director', [
@@ -110,8 +115,12 @@ class DirectorController
             }
 
             $corporationId = $user->characters()
-                ->whereNotNull('corporation_id')
+                ->whereHas('affiliation', function ($q) {
+                    $q->whereNotNull('corporation_id');
+                })
+                ->with('affiliation')
                 ->first()
+                ?->affiliation
                 ?->corporation_id;
 
             if (!$corporationId) {
@@ -164,8 +173,12 @@ class DirectorController
 
             // Get director's corporation
             $directorCorporationId = $director->characters()
-                ->whereNotNull('corporation_id')
+                ->whereHas('affiliation', function ($q) {
+                    $q->whereNotNull('corporation_id');
+                })
+                ->with('affiliation')
                 ->first()
+                ?->affiliation
                 ?->corporation_id;
 
             if (!$directorCorporationId) {
@@ -185,7 +198,10 @@ class DirectorController
             }
 
             $memberCharacters = $member->characters()
-                ->where('corporation_id', $directorCorporationId)
+                ->whereHas('affiliation', function ($q) use ($directorCorporationId) {
+                    $q->where('corporation_id', $directorCorporationId);
+                })
+                ->with('affiliation')
                 ->get();
 
             if ($memberCharacters->isEmpty()) {
