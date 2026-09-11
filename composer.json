@@ -25,6 +25,9 @@
     "laravel": {
       "providers": [
         "RCI\\MemberRewards\\MemberRewardsServiceProvider"
+      ],
+      "dont-discover": [
+        "spatie/laravel-permission"
       ]
     }
   },
