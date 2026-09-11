@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use RCI\MemberRewards\Models\Activity;
 use Seat\Eveapi\Models\Killmail\Killmail;
 use Seat\Eveapi\Models\Wallet\CorporationWalletJournal;
-use Seat\Eveapi\Models\Industry\CharacterMiningLedger;
+use Seat\Eveapi\Models\Industry\CharacterMining;
 
 class DataCollectionService
 {
@@ -34,7 +34,7 @@ class DataCollectionService
             }
 
             // Query SeAT's character mining ledger
-            $miningEntries = CharacterMiningLedger::where('date', '>=', $since)
+            $miningEntries = CharacterMining::where('date', '>=', $since)
                 ->orderBy('date', 'desc')
                 ->get();
 
@@ -50,8 +50,7 @@ class DataCollectionService
                         'metadata' => [
                             'quantity' => $entry->quantity,
                             'type_id' => $entry->type_id,
-                            'type_name' => $entry->type->typeName ?? 'Unknown',
-                            'value' => ($entry->quantity * ($entry->type->volume ?? 0)),
+                            'type_name' => $entry->type->typeName ?? 'Unknown Ore',
                         ],
                     ]
                 );
