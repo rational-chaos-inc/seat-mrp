@@ -20,7 +20,7 @@ class DashboardController
         try {
             $user = Auth::user();
 
-            if (!$user->hasPermission('member-rewards.view_own_activities')) {
+            if (!$user->can('member-rewards.view_own_activities')) {
                 abort(403, 'Unauthorized: insufficient permissions');
             }
             $timeWindow = $request->query('window', 'month');
@@ -91,7 +91,7 @@ class DashboardController
         try {
             $user = Auth::user();
 
-            if (!$user->hasPermission('member-rewards.view_own_activities')) {
+            if (!$user->can('member-rewards.view_own_activities')) {
                 abort(403, 'Unauthorized: insufficient permissions');
             }
             $timeWindow = $request->query('window', 'month');
