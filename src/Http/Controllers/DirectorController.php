@@ -23,7 +23,7 @@ class DirectorController
             $timeWindow = $request->query('window', 'month');
 
             // Validate permission
-            if (!$user->can('view_all_activities')) {
+            if (!$user->hasPermission('member-rewards.view_all_activities')) {
                 abort(403, 'You do not have permission to view this');
             }
 
@@ -96,7 +96,7 @@ class DirectorController
             $user = Auth::user();
 
             // Validate permission
-            if (!$user->can('view_all_activities')) {
+            if (!$user->hasPermission('member-rewards.view_all_activities')) {
                 abort(403, 'You do not have permission to view this');
             }
 

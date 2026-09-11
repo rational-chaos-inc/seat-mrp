@@ -19,6 +19,10 @@ class DashboardController
     {
         try {
             $user = Auth::user();
+
+            if (!$user->hasPermission('member-rewards.view_own_activities')) {
+                abort(403, 'Unauthorized: insufficient permissions');
+            }
             $timeWindow = $request->query('window', 'month');
             $activityType = $request->query('type');
 
@@ -86,6 +90,10 @@ class DashboardController
     {
         try {
             $user = Auth::user();
+
+            if (!$user->hasPermission('member-rewards.view_own_activities')) {
+                abort(403, 'Unauthorized: insufficient permissions');
+            }
             $timeWindow = $request->query('window', 'month');
 
             // Verify user owns this character
