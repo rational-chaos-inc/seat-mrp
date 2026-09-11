@@ -25,12 +25,15 @@ class DashboardController
             ->limit(100)
             ->get();
 
-        // Load character names
+        // Batch load character names
+        $charIds = $activities->pluck('character_id')->filter()->unique();
+
+        $charNames = \DB::table('character_infos')
+            ->whereIn('character_id', $charIds)
+            ->pluck('name', 'character_id');
+
         foreach ($activities as $activity) {
-            if ($activity->character_id) {
-                $char = \DB::table('character_infos')->where('character_id', $activity->character_id)->first();
-                $activity->character_name = $char ? $char->name : 'Unknown';
-            }
+            $activity->character_name = $charNames[$activity->character_id] ?? 'Unknown';
         }
 
         return view('member-rewards::dashboard.member', [

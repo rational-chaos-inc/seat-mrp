@@ -25,16 +25,21 @@ class DirectorController
             ->limit(100)
             ->get();
 
-        // Load character and corporation names
+        // Batch load character and corporation names
+        $charIds = $activities->pluck('character_id')->filter()->unique();
+        $corpIds = $activities->pluck('corporation_id')->filter()->unique();
+
+        $charNames = \DB::table('character_infos')
+            ->whereIn('character_id', $charIds)
+            ->pluck('name', 'character_id');
+
+        $corpNames = \DB::table('corporation_infos')
+            ->whereIn('corporation_id', $corpIds)
+            ->pluck('name', 'corporation_id');
+
         foreach ($activities as $activity) {
-            if ($activity->character_id) {
-                $char = \DB::table('character_infos')->where('character_id', $activity->character_id)->first();
-                $activity->character_name = $char ? $char->name : 'Unknown';
-            }
-            if ($activity->corporation_id) {
-                $corp = \DB::table('corporation_infos')->where('corporation_id', $activity->corporation_id)->first();
-                $activity->corporation_name = $corp ? $corp->name : 'Unknown';
-            }
+            $activity->character_name = $charNames[$activity->character_id] ?? 'Unknown';
+            $activity->corporation_name = $corpNames[$activity->corporation_id] ?? 'Unknown';
         }
 
         return view('member-rewards::dashboard.director', [
