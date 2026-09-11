@@ -34,53 +34,12 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
 
     public function register(): void
     {
-        $this->deleteSpatiePermissionMigrations();
-
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/package.sidebar.php', 'package.sidebar');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/character.php', 'web.character.menu_items');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/corporation.php', 'web.corporation.menu_items');
 
         $this->registerServices();
-    }
-
-    private function deleteSpatiePermissionMigrations(): void
-    {
-        $migrationPath = @database_path('migrations');
-        if (!is_dir($migrationPath)) {
-            return;
-        }
-
-        $patterns = [
-            '*_create_permission_tables.php',
-            '*_create_roles_table.php',
-            '*_create_permissions_table.php',
-            '*_create_role_has_permissions_table.php',
-            '*_create_model_has_roles_table.php',
-            '*_create_model_has_permissions_table.php',
-            '*_add_guard_names_to_roles_and_permissions_tables.php',
-        ];
-
-        foreach ($patterns as $pattern) {
-            $files = @glob($migrationPath . '/' . $pattern) ?: [];
-            foreach ($files as $file) {
-                // Delete the physical file
-                @unlink($file);
-
-                // Extract migration name from filename and remove from migrations table
-                $filename = basename($file);
-                $migrationName = preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', $filename);
-                $migrationName = preg_replace('/\.php$/', '', $migrationName);
-
-                try {
-                    \DB::table('migrations')
-                        ->where('migration', 'like', '%' . $migrationName)
-                        ->delete();
-                } catch (\Exception $e) {
-                    // Database not available yet during initial registration
-                }
-            }
-        }
     }
 
     public function boot(): void
