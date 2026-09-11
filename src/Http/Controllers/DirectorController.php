@@ -22,7 +22,8 @@ class DirectorController
 
         $activities = Activity::where('activity_timestamp', '>=', Carbon::now()->subDays($days))
             ->orderBy('activity_timestamp', 'desc')
-            ->paginate(50);
+            ->limit(100)
+            ->get();
 
         return view('member-rewards::dashboard.director', [
             'activities' => $activities,

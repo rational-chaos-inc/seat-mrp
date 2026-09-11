@@ -54,8 +54,6 @@
                     @endforeach
                 </tbody>
             </table>
-
-            {{ $activities->links() }}
         @endif
     </div>
 </div>

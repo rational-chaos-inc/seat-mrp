@@ -20,17 +20,12 @@ class DashboardController
         $timeWindow = $request->query('window', 'month');
         $days = config('member-rewards.time_windows.' . $timeWindow, 30);
 
-        $characters = $user->characters()->get();
-        $characterIds = $characters->pluck('character_id')->toArray();
-
-        $activities = Activity::whereIn('character_id', $characterIds)
-            ->where('activity_timestamp', '>=', Carbon::now()->subDays($days))
+        $activities = Activity::where('activity_timestamp', '>=', Carbon::now()->subDays($days))
             ->orderBy('activity_timestamp', 'desc')
-            ->paginate(50);
+            ->limit(100)
+            ->get();
 
         return view('member-rewards::dashboard.member', [
-            'user' => $user,
-            'characters' => $characters,
             'activities' => $activities,
             'timeWindow' => $timeWindow,
         ]);
