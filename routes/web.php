@@ -11,14 +11,14 @@ Route::middleware(['web', 'auth'])
         // Member dashboard routes
         Route::get('/dashboard', [DashboardController::class, 'member'])
             ->name('dashboard')
-            ->middleware('can:view_own_activities');
+            ->middleware('can:member-rewards.view_own_activities');
 
         Route::get('/character/{characterId}', [DashboardController::class, 'characterDetail'])
             ->name('character.detail')
-            ->middleware('can:view_own_activities');
+            ->middleware('can:member-rewards.view_own_activities');
 
         // Director dashboard routes
-        Route::middleware('can:view_all_activities')
+        Route::middleware('can:member-rewards.view_all_activities')
             ->group(function () {
                 Route::get('/director', [DirectorController::class, 'index'])
                     ->name('director.index');
