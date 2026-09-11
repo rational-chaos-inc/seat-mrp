@@ -35,43 +35,17 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
-        $this->registerPermissions(__DIR__ . '/Config/Permissions/member-rewards.permissions.php', 'member-rewards');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/package.sidebar.php', 'package.sidebar');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/character.php', 'web.character.menu_items');
         $this->mergeConfigFrom(__DIR__ . '/Config/Menu/corporation.php', 'web.corporation.menu_items');
 
-        // Delete Spatie's republished permission migrations before Laravel discovers them.
-        // Spatie publishes with new timestamp on each vendor:publish, causing conflicts.
-        // Our 2000_01_01_000000 migration handles all junction tables with proper guards.
-        $this->cleanupSpatiePermissionMigrations();
-
         $this->registerServices();
-    }
-
-    private function cleanupSpatiePermissionMigrations(): void
-    {
-        $migrationPath = @database_path('migrations');
-        if (!is_dir($migrationPath)) {
-            return;
-        }
-
-        // Find and delete unguarded Spatie permission migrations
-        $files = @glob($migrationPath . '/*_create_permission_tables.php') ?: [];
-        foreach ($files as $file) {
-            $content = @file_get_contents($file) ?: '';
-            // Skip if already guarded or if it's not a Spatie migration
-            if (strpos($content, 'if (!Schema::hasTable') !== false ||
-                strpos($content, "Schema::create('permissions'") === false) {
-                continue;
-            }
-            // Delete unguarded Spatie migration to prevent conflicts
-            @unlink($file);
-        }
     }
 
     public function boot(): void
     {
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'member-rewards');
+        $this->registerPermissions(__DIR__ . '/Config/Permissions/member-rewards.permissions.php', 'member-rewards');
         $this->publishConfig();
         $this->publishMigrations();
         $this->registerRoutes();
