@@ -185,7 +185,8 @@ class DataCollectionService
                 ->get();
 
             foreach ($entries as $entry) {
-                $characterId = $entry->first_party_id ?? $entry->second_party_id;
+                // Prefer tax_receiver_id (the character who earned it), fall back to first_party_id
+                $characterId = $entry->tax_receiver_id ?? $entry->first_party_id;
                 if (!$characterId) {
                     continue;
                 }
