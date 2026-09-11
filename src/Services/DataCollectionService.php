@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RCI\MemberRewards\Models\Activity;
 use Seat\Eveapi\Models\Killmails\Killmail;
-use Seat\Eveapi\Models\Wallets\CorporationWalletJournal;
+use Seat\Eveapi\Models\Wallet\CorporationWalletJournal;
 use Seat\Eveapi\Models\Industry\CharacterMining;
 
 class DataCollectionService
