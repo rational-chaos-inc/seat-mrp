@@ -98,6 +98,7 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
             \RCI\MemberRewards\Commands\CollectActivitiesCommand::class,
             \RCI\MemberRewards\Commands\CacheAggregationsCommand::class,
             \RCI\MemberRewards\Commands\CheckAlertsCommand::class,
+            \RCI\MemberRewards\Commands\GenerateTestDataCommand::class,
         ]);
     }
 
