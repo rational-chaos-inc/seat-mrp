@@ -38,8 +38,8 @@ class DirectorController
             ->pluck('name', 'corporation_id');
 
         foreach ($activities as $activity) {
-            $activity->character_name = $charNames[$activity->character_id] ?? 'Unknown';
-            $activity->corporation_name = $corpNames[$activity->corporation_id] ?? 'Unknown';
+            $activity->character_name = $charNames[$activity->character_id] ?? null;
+            $activity->corporation_name = $corpNames[$activity->corporation_id] ?? null;
         }
 
         return view('member-rewards::dashboard.director', [

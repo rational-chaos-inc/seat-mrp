@@ -33,7 +33,7 @@ class DashboardController
             ->pluck('name', 'character_id');
 
         foreach ($activities as $activity) {
-            $activity->character_name = $charNames[$activity->character_id] ?? 'Unknown';
+            $activity->character_name = $charNames[$activity->character_id] ?? null;
         }
 
         return view('member-rewards::dashboard.member', [
