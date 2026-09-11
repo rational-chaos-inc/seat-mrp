@@ -7,13 +7,11 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use RCI\MemberRewards\Models\Activity;
 use RCI\MemberRewards\Models\ActivityAlert;
-use RCI\MemberRewards\Services\ManagerCoreIntegrationService;
 
 class AlertService
 {
     public function __construct(
         private AggregationService $aggregationService,
-        private ManagerCoreIntegrationService $managerCoreService,
     ) {
     }
 
@@ -155,11 +153,6 @@ class AlertService
             }
 
             $alert->markAsTriggered();
-
-            // Publish alert event to Manager-Core
-            if ($this->managerCoreService->isManagerCoreAvailable()) {
-                $this->managerCoreService->publishAlertTriggered($alert->id, $user->id, $context);
-            }
 
             Log::info("Alert dispatched", [
                 'alert_id' => $alert->id,

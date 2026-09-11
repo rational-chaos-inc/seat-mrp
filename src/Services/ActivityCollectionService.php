@@ -15,7 +15,6 @@ class ActivityCollectionService
         private ESIActivityService $esiService,
         private TaxWalletActivityService $taxWalletService,
         private MiningActivityService $miningService,
-        private ManagerCoreIntegrationService $managerCoreService,
     ) {
     }
 
@@ -73,11 +72,6 @@ class ActivityCollectionService
                 'duration_seconds' => $duration,
                 'characters' => $characters->count(),
             ]);
-
-            // Publish event for Manager-Core integration
-            if ($this->managerCoreService->isManagerCoreAvailable()) {
-                $this->managerCoreService->publishActivitiesCollected($saved, $corporationId);
-            }
 
             // Publish local event
             event(new ActivitiesCollected($saved, $corporationId));
