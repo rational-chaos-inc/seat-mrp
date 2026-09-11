@@ -185,12 +185,11 @@ class DataCollectionService
                 ->get();
 
             foreach ($entries as $entry) {
-                // Extract character name from description (e.g., "Bounty Prizes for John Smith")
+                // Extract character name from description (e.g., "[r] Xaels got bounty prizes...")
                 $characterId = null;
                 if ($entry->description) {
-                    // Try to find character name at the end of description
-                    preg_match('/(\w+(?:\s+\w+)*)\s*$/', $entry->description, $matches);
-                    if ($matches) {
+                    // Match character name after "[r] " at the beginning
+                    if (preg_match('/^\[r\]\s+(.+?)\s+got\s+/', $entry->description, $matches)) {
                         $characterName = $matches[1];
                         // Look up character ID by name
                         $char = \DB::table('character_infos')
