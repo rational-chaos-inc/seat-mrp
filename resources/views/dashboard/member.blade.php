@@ -8,12 +8,8 @@
         <h3 class="card-title">My Activities</h3>
     </div>
     <div class="card-body">
-        @if($characters->isEmpty())
-            <div class="alert alert-warning">No linked characters found</div>
-        @else
-            <p>Characters: {{ $characters->pluck('name')->join(', ') }}</p>
-            <p>Time Period: {{ $timeWindow }}</p>
-        @endif
+        <p>Time Period: <strong>{{ $timeWindow }}</strong></p>
+        <p>Records Shown: <strong>{{ count($activities) }}</strong></p>
     </div>
 </div>
 @endsection
