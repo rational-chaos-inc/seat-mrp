@@ -184,7 +184,8 @@ class DataCollectionService
                 ->orderBy('date', 'desc')
                 ->get();
 
-            Log::info("Found {$count} wallet entries with amount > 0");
+            $entryCount = $entries->count();
+            Log::info("Found {$entryCount} wallet entries with amount > 0");
 
             $sampleCount = 0;
             foreach ($entries as $entry) {
