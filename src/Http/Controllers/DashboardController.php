@@ -21,14 +21,17 @@ class DashboardController
         $days = config('member-rewards.time_windows.' . $timeWindow, 30);
 
         $activities = Activity::where('activity_timestamp', '>=', Carbon::now()->subDays($days))
-            ->leftJoin('character_infos', 'activities.character_id', '=', 'character_infos.character_id')
-            ->select(
-                'activities.*',
-                'character_infos.name as character_name'
-            )
             ->orderBy('activity_timestamp', 'desc')
             ->limit(100)
             ->get();
+
+        // Load character names
+        foreach ($activities as $activity) {
+            if ($activity->character_id) {
+                $char = \DB::table('character_infos')->where('character_id', $activity->character_id)->first();
+                $activity->character_name = $char ? $char->name : 'Unknown';
+            }
+        }
 
         return view('member-rewards::dashboard.member', [
             'activities' => $activities,
