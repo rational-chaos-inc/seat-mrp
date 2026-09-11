@@ -17,10 +17,10 @@
 @section('middle')
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">All Activities</h3>
+        <h3 class="card-title">All Activities ({{ count($activities) }})</h3>
     </div>
-    <div class="card-body">
-        @if($activities->isEmpty())
+    <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+        @if(count($activities) == 0)
             <div class="alert alert-info">No activities recorded yet</div>
         @else
             <table class="table table-sm table-striped">
