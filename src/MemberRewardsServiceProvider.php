@@ -51,9 +51,21 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
             return;
         }
 
-        $files = @glob($migrationPath . '/*_create_permission_tables.php') ?: [];
-        foreach ($files as $file) {
-            @unlink($file);
+        $patterns = [
+            '*_create_permission_tables.php',
+            '*_create_roles_table.php',
+            '*_create_permissions_table.php',
+            '*_create_role_has_permissions_table.php',
+            '*_create_model_has_roles_table.php',
+            '*_create_model_has_permissions_table.php',
+            '*_add_guard_names_to_roles_and_permissions_tables.php',
+        ];
+
+        foreach ($patterns as $pattern) {
+            $files = @glob($migrationPath . '/' . $pattern) ?: [];
+            foreach ($files as $file) {
+                @unlink($file);
+            }
         }
     }
 
