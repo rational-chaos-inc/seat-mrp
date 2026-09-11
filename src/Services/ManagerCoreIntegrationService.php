@@ -101,7 +101,7 @@ class ManagerCoreIntegrationService
                 self::PLUGIN_KEY,
                 'character.token.refreshed',
                 \RCI\MemberRewards\Listeners\CharacterTokenRefreshedListener::class,
-                ['queued' => true]
+                'handle'
             );
 
             // Subscribe to character linked events
@@ -109,7 +109,7 @@ class ManagerCoreIntegrationService
                 self::PLUGIN_KEY,
                 'character.linked',
                 \RCI\MemberRewards\Listeners\CharacterLinkedListener::class,
-                ['queued' => true]
+                'handle'
             );
 
             Log::debug("Character event subscriptions registered");
@@ -134,7 +134,7 @@ class ManagerCoreIntegrationService
                 self::PLUGIN_KEY,
                 'mining.ledger.recorded',
                 \RCI\MemberRewards\Listeners\MiningLedgerRecordedListener::class,
-                ['queued' => true]
+                'handle'
             );
 
             // Subscribe to extraction events
@@ -142,7 +142,7 @@ class ManagerCoreIntegrationService
                 self::PLUGIN_KEY,
                 'mining.extraction_*',
                 \RCI\MemberRewards\Listeners\MiningExtractionListener::class,
-                ['queued' => true]
+                'handle'
             );
 
             Log::debug("Mining event subscriptions registered");
@@ -167,7 +167,7 @@ class ManagerCoreIntegrationService
                 self::PLUGIN_KEY,
                 'esi.killmail.*',
                 \RCI\MemberRewards\Listeners\KillmailReceivedListener::class,
-                ['queued' => true]
+                'handle'
             );
 
             Log::debug("ESI event subscriptions registered");
