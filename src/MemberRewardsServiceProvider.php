@@ -64,7 +64,21 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         foreach ($patterns as $pattern) {
             $files = @glob($migrationPath . '/' . $pattern) ?: [];
             foreach ($files as $file) {
+                // Delete the physical file
                 @unlink($file);
+
+                // Extract migration name from filename and remove from migrations table
+                $filename = basename($file);
+                $migrationName = preg_replace('/^\d{4}_\d{2}_\d{2}_\d{6}_/', '', $filename);
+                $migrationName = preg_replace('/\.php$/', '', $migrationName);
+
+                try {
+                    \DB::table('migrations')
+                        ->where('migration', 'like', '%' . $migrationName)
+                        ->delete();
+                } catch (\Exception $e) {
+                    // Database not available yet during initial registration
+                }
             }
         }
     }
