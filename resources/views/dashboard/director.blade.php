@@ -9,7 +9,7 @@
     </div>
     <div class="card-body">
         <p>Time Period: <strong>{{ $timeWindow }}</strong></p>
-        <p>Total Records: <strong>{{ $activities->total() }}</strong></p>
+        <p>Records Shown: <strong>{{ count($activities) }}</strong></p>
     </div>
 </div>
 @endsection
