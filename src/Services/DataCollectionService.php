@@ -185,8 +185,23 @@ class DataCollectionService
                 ->get();
 
             foreach ($entries as $entry) {
-                // Prefer tax_receiver_id (the character who earned it), fall back to first_party_id
-                $characterId = $entry->tax_receiver_id ?? $entry->first_party_id;
+                // Extract character name from description (e.g., "Bounty Prizes for John Smith")
+                $characterId = null;
+                if ($entry->description) {
+                    // Try to find character name at the end of description
+                    preg_match('/(\w+(?:\s+\w+)*)\s*$/', $entry->description, $matches);
+                    if ($matches) {
+                        $characterName = $matches[1];
+                        // Look up character ID by name
+                        $char = \DB::table('character_infos')
+                            ->where('name', $characterName)
+                            ->first();
+                        if ($char) {
+                            $characterId = $char->character_id;
+                        }
+                    }
+                }
+
                 if (!$characterId) {
                     continue;
                 }
