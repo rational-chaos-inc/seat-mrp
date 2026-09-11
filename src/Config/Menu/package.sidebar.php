@@ -27,12 +27,6 @@ return [
                 'route' => 'member-rewards.director.index',
                 'permission' => 'member-rewards.view_all_activities',
             ],
-            [
-                'name' => 'League Tables',
-                'icon' => 'fas fa-trophy',
-                'route' => 'member-rewards.league-tables',
-                'permission' => 'member-rewards.view_all_activities',
-            ],
         ],
     ],
 ];
