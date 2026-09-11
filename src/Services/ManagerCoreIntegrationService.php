@@ -94,7 +94,7 @@ class ManagerCoreIntegrationService
         }
 
         try {
-            $eventBus = app(\ManagerCore\Service\EventBus::class);
+            $eventBus = app(\ManagerCore\Services\EventBus::class);
 
             // Subscribe to character token events
             $eventBus->subscribeHandler(
@@ -127,7 +127,7 @@ class ManagerCoreIntegrationService
         }
 
         try {
-            $eventBus = app(\ManagerCore\Service\EventBus::class);
+            $eventBus = app(\ManagerCore\Services\EventBus::class);
 
             // Subscribe to mining completion events
             $eventBus->subscribeHandler(
@@ -160,7 +160,7 @@ class ManagerCoreIntegrationService
         }
 
         try {
-            $eventBus = app(\ManagerCore\Service\EventBus::class);
+            $eventBus = app(\ManagerCore\Services\EventBus::class);
 
             // Subscribe to ESI fast-poll events (if available)
             $eventBus->subscribeHandler(
