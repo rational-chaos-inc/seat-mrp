@@ -71,6 +71,7 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
 
     public function boot(): void
     {
+        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'member-rewards');
         $this->publishConfig();
         $this->publishMigrations();
         $this->registerRoutes();
