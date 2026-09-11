@@ -55,6 +55,9 @@
                                                 @elseif(isset($meta['amount']))
                                                     ISK {{ number_format($meta['amount']) }}
                                                 @endif
+                                                @if(isset($meta['description']))
+                                                    <div style="font-size: 0.85em; color: #666;">{{ $meta['description'] }}</div>
+                                                @endif
                                             @endif
                                         </td>
                                     </tr>

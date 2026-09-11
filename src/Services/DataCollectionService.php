@@ -184,38 +184,19 @@ class DataCollectionService
                 ->get();
 
             foreach ($entries as $entry) {
-                $characterId = 0; // Default to 0 if we can't extract
-                $characterName = 'Unknown';
-
-                // Extract character name from description (e.g., "[r] Xaels got bounty prizes...")
-                if ($entry->description) {
-                    // Try multiple regex patterns
-                    if (preg_match('/^\[r\]\s+(.+?)\s+got\s+/', $entry->description, $matches)) {
-                        $characterName = $matches[1];
-                        // Look up character ID by name
-                        $char = \DB::table('character_infos')
-                            ->where('name', $characterName)
-                            ->first();
-                        if ($char) {
-                            $characterId = $char->character_id;
-                        }
-                    }
-                }
-
-                $sourceId = "wallet_{$entry->id}_{$characterId}";
+                $sourceId = "wallet_{$entry->id}";
 
                 Activity::updateOrCreate(
                     ['source_id' => $sourceId],
                     [
                         'activity_type' => 'tax_wallet',
-                        'character_id' => $characterId,
+                        'character_id' => 0,
                         'corporation_id' => $entry->corporation_id,
                         'activity_timestamp' => $entry->date,
                         'metadata' => [
                             'amount' => abs($entry->amount ?? 0),
                             'ref_type' => $entry->ref_type,
                             'description' => $entry->description,
-                            'extracted_name' => $characterName,
                         ],
                     ]
                 );
