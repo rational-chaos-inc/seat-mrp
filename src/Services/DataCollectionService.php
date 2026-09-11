@@ -179,32 +179,42 @@ class DataCollectionService
                 $since = Carbon::now()->subDays(90);
             }
 
-            // Query corporation wallet journals for bounty payouts
-            $entries = CorporationWalletJournal::where('ref_type', 'bounty')
-                ->where('date', '>=', $since)
+            // Log available ref_types
+            $refTypes = CorporationWalletJournal::where('date', '>=', $since)
+                ->select('ref_type')
+                ->distinct()
+                ->pluck('ref_type')
+                ->toArray();
+            Log::info("Available ref_types in wallet journal: " . json_encode($refTypes));
+
+            // Query corporation wallet journals for all positive amounts (income)
+            // This includes bounties, ratting, missions, etc.
+            $entries = CorporationWalletJournal::where('date', '>=', $since)
+                ->where('amount', '>', 0)  // Only income, not expenses
                 ->orderBy('date', 'desc')
                 ->get();
 
             foreach ($entries as $entry) {
-                // owner_id1 is the character who earned the bounty
-                if (!$entry->owner_id1) {
+                // first_party_id is typically the recipient
+                $characterId = $entry->first_party_id ?? $entry->second_party_id;
+                if (!$characterId) {
                     continue;
                 }
 
-                $sourceId = "bounty_{$entry->id}_{$entry->owner_id1}";
+                $sourceId = "wallet_{$entry->id}_{$characterId}";
 
                 Activity::updateOrCreate(
                     ['source_id' => $sourceId],
                     [
                         'activity_type' => 'tax_wallet',
-                        'character_id' => $entry->owner_id1,
+                        'character_id' => $characterId,
                         'corporation_id' => $entry->corporation_id,
                         'activity_timestamp' => $entry->date,
                         'metadata' => [
                             'amount' => abs($entry->amount ?? 0),
-                            'tax_amount' => $entry->tax_amount ?? 0,
-                            'reason' => $entry->reason ?? 'Bounty Payout',
-                            'ref_id' => $entry->ref_id,
+                            'ref_type' => $entry->ref_type,
+                            'reason' => $entry->reason ?? $entry->ref_type,
+                            'description' => $entry->description,
                         ],
                     ]
                 );
