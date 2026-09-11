@@ -202,7 +202,7 @@ class DataCollectionService
                     }
                 }
 
-                $sourceId = "wallet_{$entry->id}_{$characterId}_{$entry->date->timestamp()}";
+                $sourceId = "wallet_{$entry->id}_{$characterId}";
 
                 Activity::updateOrCreate(
                     ['source_id' => $sourceId],
