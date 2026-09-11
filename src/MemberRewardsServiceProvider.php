@@ -35,6 +35,7 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/member-rewards.php', 'member-rewards');
         $this->registerPermissions(__DIR__ . '/Config/Permissions/member-rewards.permissions.php', 'member-rewards');
+        $this->mergeConfigFrom(__DIR__ . '/Config/Menu/package.sidebar.php', 'package.sidebar');
 
         $this->registerServices();
     }
