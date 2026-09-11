@@ -59,6 +59,7 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
         $this->app->singleton(ActivityCollectionService::class);
         $this->app->singleton(AggregationService::class);
         $this->app->singleton(\RCI\MemberRewards\Services\AlertService::class);
+        $this->app->singleton(\RCI\MemberRewards\Services\DataCollectionService::class);
     }
 
     private function publishConfig(): void
@@ -93,10 +94,11 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
     private function registerCommands(): void
     {
         $this->commands([
+            \RCI\MemberRewards\Commands\SyncActivitiesCommand::class,
+            \RCI\MemberRewards\Commands\GenerateTestDataCommand::class,
             \RCI\MemberRewards\Commands\CollectActivitiesCommand::class,
             \RCI\MemberRewards\Commands\CacheAggregationsCommand::class,
             \RCI\MemberRewards\Commands\CheckAlertsCommand::class,
-            \RCI\MemberRewards\Commands\GenerateTestDataCommand::class,
         ]);
     }
 
