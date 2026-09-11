@@ -76,11 +76,9 @@ class MemberRewardsServiceProvider extends AbstractSeatPlugin
 
     private function registerRoutes(): void
     {
-        // Load web routes
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
-
-        // Load API routes
-        $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+        // Routes disabled - causing hangs. Will re-enable after debugging.
+        // $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        // $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
     }
 
     private function registerViews(): void
