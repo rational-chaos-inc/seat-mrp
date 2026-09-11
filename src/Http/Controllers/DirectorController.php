@@ -21,6 +21,13 @@ class DirectorController
         $days = config('member-rewards.time_windows.' . $timeWindow, 30);
 
         $activities = Activity::where('activity_timestamp', '>=', Carbon::now()->subDays($days))
+            ->leftJoin('character_infos', 'activities.character_id', '=', 'character_infos.character_id')
+            ->leftJoin('corporation_infos', 'activities.corporation_id', '=', 'corporation_infos.corporation_id')
+            ->select(
+                'activities.*',
+                'character_infos.character_name',
+                'corporation_infos.corporation_name'
+            )
             ->orderBy('activity_timestamp', 'desc')
             ->limit(100)
             ->get();

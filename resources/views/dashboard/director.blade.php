@@ -44,8 +44,8 @@
                                 @foreach($activities as $activity)
                                     <tr>
                                         <td>{{ $activity->activity_timestamp->format('Y-m-d H:i') }}</td>
-                                        <td>{{ $activity->character_id }}</td>
-                                        <td>{{ $activity->corporation_id ?? 'N/A' }}</td>
+                                        <td>{{ $activity->character_name ?? 'Unknown' }}</td>
+                                        <td>{{ $activity->corporation_name ?? 'Unknown' }}</td>
                                         <td><span class="label label-primary">{{ $activity->activity_type }}</span></td>
                                         <td>
                                             @if($activity->metadata)
