@@ -25,8 +25,8 @@ class DirectorController
             ->leftJoin('corporation_infos', 'activities.corporation_id', '=', 'corporation_infos.corporation_id')
             ->select(
                 'activities.*',
-                'character_infos.character_name',
-                'corporation_infos.corporation_name'
+                'character_infos.name as character_name',
+                'corporation_infos.name as corporation_name'
             )
             ->orderBy('activity_timestamp', 'desc')
             ->limit(100)

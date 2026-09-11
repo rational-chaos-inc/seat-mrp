@@ -24,7 +24,7 @@ class DashboardController
             ->leftJoin('character_infos', 'activities.character_id', '=', 'character_infos.character_id')
             ->select(
                 'activities.*',
-                'character_infos.character_name'
+                'character_infos.name as character_name'
             )
             ->orderBy('activity_timestamp', 'desc')
             ->limit(100)
