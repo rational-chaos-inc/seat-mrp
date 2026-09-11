@@ -8,8 +8,21 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Only create junction tables - let SeAT and Spatie migrations handle the base tables
-        // Guard against duplicate table creation from competing package migrations
+        // Add Spatie columns to existing permissions table if they don't exist
+        if (Schema::hasTable('permissions')) {
+            if (!Schema::hasColumn('permissions', 'guard_name')) {
+                Schema::table('permissions', function (Blueprint $table) {
+                    $table->string('guard_name')->default('web')->after('title');
+                });
+            }
+            if (!Schema::hasColumn('permissions', 'created_at')) {
+                Schema::table('permissions', function (Blueprint $table) {
+                    $table->timestamps();
+                });
+            }
+        }
+
+        // Create junction tables - guard against duplicate table creation from competing package migrations
 
         // Create role_has_permissions table if it doesn't exist
         if (!Schema::hasTable('role_has_permissions')) {
