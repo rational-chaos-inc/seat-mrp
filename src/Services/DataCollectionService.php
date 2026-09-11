@@ -6,9 +6,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RCI\MemberRewards\Models\Activity;
-use Seat\Eveapi\Models\Killmails\Killmail;
-use Seat\Eveapi\Models\Wallet\CorporationWalletJournal;
 use Seat\Eveapi\Models\Industry\CharacterMining;
+use Seat\Eveapi\Models\Wallet\CorporationWalletJournal;
 
 class DataCollectionService
 {
@@ -33,8 +32,7 @@ class DataCollectionService
                 $since = Carbon::now()->subDays(90);
             }
 
-            // Query SeAT's character mining ledger
-            $miningEntries = CharacterMining::where('date', '>=', $since)
+            $miningEntries = CharacterMining::where('date', '>=', $since->toDateString())
                 ->orderBy('date', 'desc')
                 ->get();
 
@@ -50,7 +48,6 @@ class DataCollectionService
                         'metadata' => [
                             'quantity' => $entry->quantity,
                             'type_id' => $entry->type_id,
-                            'type_name' => $entry->type->typeName ?? 'Unknown Ore',
                         ],
                     ]
                 );
@@ -59,9 +56,7 @@ class DataCollectionService
 
             Log::info("Collected {$count} mining activities");
         } catch (\Exception $e) {
-            Log::error("Error collecting mining data", [
-                'error' => $e->getMessage(),
-            ]);
+            Log::error("Error collecting mining data", ['error' => $e->getMessage()]);
         }
 
         return $count;
@@ -76,46 +71,46 @@ class DataCollectionService
                 $since = Carbon::now()->subDays(90);
             }
 
-            // Query SeAT's killmails where we got the kill
-            $killmails = Killmail::where('killmail_time', '>=', $since)
-                ->where('is_loss', false)
-                ->orderBy('killmail_time', 'desc')
+            $kills = DB::table('killmail_details')
+                ->join('killmail_attackers', 'killmail_details.killmail_id', '=', 'killmail_attackers.killmail_id')
+                ->join('killmail_victims', 'killmail_details.killmail_id', '=', 'killmail_victims.killmail_id')
+                ->where('killmail_details.killmail_time', '>=', $since)
+                ->select(
+                    'killmail_details.killmail_id',
+                    'killmail_details.killmail_time',
+                    'killmail_attackers.character_id as attacker_character_id',
+                    'killmail_victims.character_id as victim_character_id',
+                    'killmail_victims.ship_type_id'
+                )
+                ->orderBy('killmail_details.killmail_time', 'desc')
                 ->get();
 
-            foreach ($killmails as $killmail) {
-                $attackers = $killmail->attackers ?? collect();
-
-                foreach ($attackers as $attacker) {
-                    if (!$attacker['character_id']) {
-                        continue;
-                    }
-
-                    $sourceId = "kill_{$killmail->killmail_id}_{$attacker['character_id']}";
-
-                    Activity::updateOrCreate(
-                        ['source_id' => $sourceId],
-                        [
-                            'activity_type' => 'pvp_kill',
-                            'character_id' => $attacker['character_id'],
-                            'activity_timestamp' => $killmail->killmail_time,
-                            'metadata' => [
-                                'killmail_id' => $killmail->killmail_id,
-                                'victim_name' => $killmail->victim['character_name'] ?? 'NPC',
-                                'victim_corp' => $killmail->victim['corporation_name'] ?? 'Unknown',
-                                'ship_type' => $killmail->victim['ship_type_name'] ?? 'Unknown',
-                                'total_value' => $killmail->total_value ?? 0,
-                            ],
-                        ]
-                    );
-                    $count++;
+            foreach ($kills as $kill) {
+                if (!$kill->attacker_character_id) {
+                    continue;
                 }
+
+                $sourceId = "kill_{$kill->killmail_id}_{$kill->attacker_character_id}";
+
+                Activity::updateOrCreate(
+                    ['source_id' => $sourceId],
+                    [
+                        'activity_type' => 'pvp_kill',
+                        'character_id' => $kill->attacker_character_id,
+                        'activity_timestamp' => $kill->killmail_time,
+                        'metadata' => [
+                            'killmail_id' => $kill->killmail_id,
+                            'victim_character_id' => $kill->victim_character_id,
+                            'ship_type_id' => $kill->ship_type_id,
+                        ],
+                    ]
+                );
+                $count++;
             }
 
             Log::info("Collected {$count} kill activities");
         } catch (\Exception $e) {
-            Log::error("Error collecting kill data", [
-                'error' => $e->getMessage(),
-            ]);
+            Log::error("Error collecting kill data", ['error' => $e->getMessage()]);
         }
 
         return $count;
@@ -130,30 +125,37 @@ class DataCollectionService
                 $since = Carbon::now()->subDays(90);
             }
 
-            // Query SeAT's killmails where we were the victim
-            $killmails = Killmail::where('killmail_time', '>=', $since)
-                ->where('is_loss', true)
-                ->orderBy('killmail_time', 'desc')
+            $losses = DB::table('killmail_details')
+                ->join('killmail_victims', 'killmail_details.killmail_id', '=', 'killmail_victims.killmail_id')
+                ->join('killmail_attackers', 'killmail_details.killmail_id', '=', 'killmail_attackers.killmail_id', 'left')
+                ->where('killmail_details.killmail_time', '>=', $since)
+                ->select(
+                    'killmail_details.killmail_id',
+                    'killmail_details.killmail_time',
+                    'killmail_victims.character_id as victim_character_id',
+                    'killmail_victims.ship_type_id',
+                    'killmail_attackers.character_id as final_blow_by'
+                )
+                ->orderBy('killmail_details.killmail_time', 'desc')
                 ->get();
 
-            foreach ($killmails as $killmail) {
-                if (!$killmail->victim['character_id']) {
+            foreach ($losses as $loss) {
+                if (!$loss->victim_character_id) {
                     continue;
                 }
 
-                $sourceId = "loss_{$killmail->killmail_id}";
+                $sourceId = "loss_{$loss->killmail_id}_{$loss->victim_character_id}";
 
                 Activity::updateOrCreate(
                     ['source_id' => $sourceId],
                     [
                         'activity_type' => 'pvp_loss',
-                        'character_id' => $killmail->victim['character_id'],
-                        'activity_timestamp' => $killmail->killmail_time,
+                        'character_id' => $loss->victim_character_id,
+                        'activity_timestamp' => $loss->killmail_time,
                         'metadata' => [
-                            'killmail_id' => $killmail->killmail_id,
-                            'final_blow_by' => $killmail->attackers[0]['character_name'] ?? 'Unknown' ?? 'Unknown',
-                            'ship_type' => $killmail->victim['ship_type_name'] ?? 'Unknown',
-                            'total_value' => $killmail->total_value ?? 0,
+                            'killmail_id' => $loss->killmail_id,
+                            'final_blow_by' => $loss->final_blow_by,
+                            'ship_type_id' => $loss->ship_type_id,
                         ],
                     ]
                 );
@@ -162,9 +164,7 @@ class DataCollectionService
 
             Log::info("Collected {$count} loss activities");
         } catch (\Exception $e) {
-            Log::error("Error collecting loss data", [
-                'error' => $e->getMessage(),
-            ]);
+            Log::error("Error collecting loss data", ['error' => $e->getMessage()]);
         }
 
         return $count;
@@ -179,23 +179,12 @@ class DataCollectionService
                 $since = Carbon::now()->subDays(90);
             }
 
-            // Log available ref_types
-            $refTypes = CorporationWalletJournal::where('date', '>=', $since)
-                ->select('ref_type')
-                ->distinct()
-                ->pluck('ref_type')
-                ->toArray();
-            Log::info("Available ref_types in wallet journal: " . json_encode($refTypes));
-
-            // Query corporation wallet journals for all positive amounts (income)
-            // This includes bounties, ratting, missions, etc.
             $entries = CorporationWalletJournal::where('date', '>=', $since)
-                ->where('amount', '>', 0)  // Only income, not expenses
+                ->where('amount', '>', 0)
                 ->orderBy('date', 'desc')
                 ->get();
 
             foreach ($entries as $entry) {
-                // first_party_id is typically the recipient
                 $characterId = $entry->first_party_id ?? $entry->second_party_id;
                 if (!$characterId) {
                     continue;
@@ -213,7 +202,6 @@ class DataCollectionService
                         'metadata' => [
                             'amount' => abs($entry->amount ?? 0),
                             'ref_type' => $entry->ref_type,
-                            'reason' => $entry->reason ?? $entry->ref_type,
                             'description' => $entry->description,
                         ],
                     ]
@@ -223,9 +211,7 @@ class DataCollectionService
 
             Log::info("Collected {$count} tax/bounty activities");
         } catch (\Exception $e) {
-            Log::error("Error collecting tax data", [
-                'error' => $e->getMessage(),
-            ]);
+            Log::error("Error collecting tax data", ['error' => $e->getMessage()]);
         }
 
         return $count;
