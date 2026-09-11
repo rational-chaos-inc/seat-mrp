@@ -184,19 +184,30 @@ class DataCollectionService
                 ->orderBy('date', 'desc')
                 ->get();
 
+            Log::info("Found {$count} wallet entries with amount > 0");
+
+            $sampleCount = 0;
             foreach ($entries as $entry) {
+                if ($sampleCount < 3) {
+                    Log::info("Sample description: " . $entry->description);
+                    $sampleCount++;
+                }
+
                 // Extract character name from description (e.g., "[r] Xaels got bounty prizes...")
                 $characterId = null;
                 if ($entry->description) {
                     // Match character name after "[r] " at the beginning
                     if (preg_match('/^\[r\]\s+(.+?)\s+got\s+/', $entry->description, $matches)) {
                         $characterName = $matches[1];
+                        Log::info("Extracted character name: {$characterName}");
                         // Look up character ID by name
                         $char = \DB::table('character_infos')
                             ->where('name', $characterName)
                             ->first();
                         if ($char) {
                             $characterId = $char->character_id;
+                        } else {
+                            Log::info("Character not found in character_infos: {$characterName}");
                         }
                     }
                 }
