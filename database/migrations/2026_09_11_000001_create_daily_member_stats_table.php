@@ -20,10 +20,10 @@ return new class extends Migration
             $table->integer('pvp_kill_instances')->default(0);
             $table->timestamps();
 
-            $table->unique(['date', 'corporation_id', 'character_id']);
-            $table->index('corporation_id');
-            $table->index('character_id');
-            $table->index('date');
+            $table->unique(['date', 'corporation_id', 'character_id'], 'daily_stats_unique');
+            $table->index('corporation_id', 'daily_stats_corp_idx');
+            $table->index('character_id', 'daily_stats_char_idx');
+            $table->index('date', 'daily_stats_date_idx');
         });
     }
 

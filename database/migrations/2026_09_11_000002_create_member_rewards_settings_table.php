@@ -22,8 +22,8 @@ return new class extends Migration
             $table->decimal('pvp_weight', 5, 2)->default(1.0);
             $table->timestamps();
 
-            $table->unique(['corporation_id', 'user_id']);
-            $table->index('corporation_id');
+            $table->unique(['corporation_id', 'user_id'], 'settings_unique');
+            $table->index('corporation_id', 'settings_corp_idx');
         });
     }
 
