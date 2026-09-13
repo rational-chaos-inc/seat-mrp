@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::dropIfExists('member_rewards_settings');
         Schema::create('member_rewards_settings', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('corporation_id');
