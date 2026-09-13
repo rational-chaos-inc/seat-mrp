@@ -22,6 +22,9 @@ class AggregationService
 
         $activities = $query->get();
 
+        // Filter out activities without a corporation_id
+        $activities = $activities->filter(fn($a) => !empty($a->corporation_id));
+
         // Get login data from corporation_member_trackings
         $corpIds = $activities->pluck('corporation_id')->unique();
         $loginData = DB::table('corporation_member_trackings')
