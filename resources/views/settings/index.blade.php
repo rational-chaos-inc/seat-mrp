@@ -20,7 +20,7 @@
                 @foreach($corporations as $corp)
                     @php $setting = $settings[$corp->corporation_id] ?? null; @endphp
 
-                    <div class="card mb-3">
+                    <div class="card mb-4">
                         <div class="card-header bg-light">
                             <h5 class="card-title mb-0">{{ $corp->name ?? 'Unknown Corporation' }}</h5>
                         </div>
@@ -29,106 +29,175 @@
                                 @csrf
                                 <input type="hidden" name="corporation_id" value="{{ $corp->corporation_id }}">
 
-                                <!-- Visibility Controls -->
-                                <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted">Visible Metrics</h6>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="show_login_status"
-                                                {{ $setting && $setting->show_login_status ? 'checked' : '' }}
-                                                id="login_{{ $corp->corporation_id }}">
-                                            <label class="form-check-label" for="login_{{ $corp->corporation_id }}">
-                                                Login Status
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="show_mining"
-                                                {{ $setting && $setting->show_mining ? 'checked' : '' }}
-                                                id="mining_{{ $corp->corporation_id }}">
-                                            <label class="form-check-label" for="mining_{{ $corp->corporation_id }}">
-                                                Mining Activity
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="show_tax_bounty"
-                                                {{ $setting && $setting->show_tax_bounty ? 'checked' : '' }}
-                                                id="tax_{{ $corp->corporation_id }}">
-                                            <label class="form-check-label" for="tax_{{ $corp->corporation_id }}">
-                                                Tax/Bounty Contributions
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="show_pvp"
-                                                {{ $setting && $setting->show_pvp ? 'checked' : '' }}
-                                                id="pvp_{{ $corp->corporation_id }}">
-                                            <label class="form-check-label" for="pvp_{{ $corp->corporation_id }}">
-                                                PvP Activity
-                                            </label>
-                                        </div>
-                                    </div>
+                                <!-- Metrics Configuration -->
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Metric</th>
+                                            <th style="width: 300px;">Visibility</th>
+                                            <th style="width: 120px;">Weight (0-10)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Login Status -->
+                                        <tr>
+                                            <td>
+                                                <strong>Login Status</strong>
+                                                <div class="small text-muted">Daily login tracking</div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <input type="radio" class="btn-check" name="login_visibility" value="directors"
+                                                        {{ $setting && $setting->login_visibility === 'directors' ? 'checked' : '' }}
+                                                        id="login_directors_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="login_directors_{{ $corp->corporation_id }}">Directors</label>
 
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted">Who Can See</h6>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="visibility_level"
-                                                value="directors"
-                                                {{ $setting && $setting->visibility_level === 'directors' ? 'checked' : '' }}
-                                                id="vis_directors_{{ $corp->corporation_id }}">
-                                            <label class="form-check-label" for="vis_directors_{{ $corp->corporation_id }}">
-                                                Directors Only
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="visibility_level"
-                                                value="members"
-                                                {{ $setting && $setting->visibility_level === 'members' ? 'checked' : '' }}
-                                                id="vis_members_{{ $corp->corporation_id }}">
-                                            <label class="form-check-label" for="vis_members_{{ $corp->corporation_id }}">
-                                                Members Only
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="visibility_level"
-                                                value="both"
-                                                {{ $setting && $setting->visibility_level === 'both' ? 'checked' : '' }}
-                                                id="vis_both_{{ $corp->corporation_id }}">
-                                            <label class="form-check-label" for="vis_both_{{ $corp->corporation_id }}">
-                                                Everyone
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
+                                                    <input type="radio" class="btn-check" name="login_visibility" value="members"
+                                                        {{ $setting && $setting->login_visibility === 'members' ? 'checked' : '' }}
+                                                        id="login_members_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="login_members_{{ $corp->corporation_id }}">Members</label>
 
-                                <!-- Activity Weighting -->
-                                <div class="row mb-4">
-                                    <div class="col-md-12">
-                                        <h6 class="text-muted">Activity Weighting (0-10)</h6>
-                                        <p class="small text-secondary">Used to calculate member scores. Higher = more important.</p>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label for="mining_weight_{{ $corp->corporation_id }}" class="form-label">Mining Weight</label>
-                                        <input type="number" step="0.1" min="0" max="10" class="form-control"
-                                            name="mining_weight"
-                                            value="{{ $setting ? $setting->mining_weight : 1.0 }}"
-                                            id="mining_weight_{{ $corp->corporation_id }}">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label for="tax_weight_{{ $corp->corporation_id }}" class="form-label">Tax/Bounty Weight</label>
-                                        <input type="number" step="0.1" min="0" max="10" class="form-control"
-                                            name="tax_bounty_weight"
-                                            value="{{ $setting ? $setting->tax_bounty_weight : 1.0 }}"
-                                            id="tax_weight_{{ $corp->corporation_id }}">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label for="pvp_weight_{{ $corp->corporation_id }}" class="form-label">PvP Weight</label>
-                                        <input type="number" step="0.1" min="0" max="10" class="form-control"
-                                            name="pvp_weight"
-                                            value="{{ $setting ? $setting->pvp_weight : 1.0 }}"
-                                            id="pvp_weight_{{ $corp->corporation_id }}">
-                                    </div>
-                                </div>
+                                                    <input type="radio" class="btn-check" name="login_visibility" value="both"
+                                                        {{ $setting && $setting->login_visibility === 'both' ? 'checked' : '' }}
+                                                        id="login_both_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="login_both_{{ $corp->corporation_id }}">Both</label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm"
+                                                    name="mining_weight"
+                                                    value="{{ $setting ? $setting->mining_weight : 1.0 }}"
+                                                    style="display: none;">
+                                            </td>
+                                        </tr>
 
-                                <div class="row">
+                                        <!-- Mining Activity -->
+                                        <tr>
+                                            <td>
+                                                <strong>Mining Activity</strong>
+                                                <div class="small text-muted">Ore mined and value generated</div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <input type="radio" class="btn-check" name="mining_visibility" value="directors"
+                                                        {{ $setting && $setting->mining_visibility === 'directors' ? 'checked' : '' }}
+                                                        id="mining_directors_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="mining_directors_{{ $corp->corporation_id }}">Directors</label>
+
+                                                    <input type="radio" class="btn-check" name="mining_visibility" value="members"
+                                                        {{ $setting && $setting->mining_visibility === 'members' ? 'checked' : '' }}
+                                                        id="mining_members_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="mining_members_{{ $corp->corporation_id }}">Members</label>
+
+                                                    <input type="radio" class="btn-check" name="mining_visibility" value="both"
+                                                        {{ $setting && $setting->mining_visibility === 'both' ? 'checked' : '' }}
+                                                        id="mining_both_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="mining_both_{{ $corp->corporation_id }}">Both</label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm"
+                                                    name="mining_weight"
+                                                    value="{{ $setting ? $setting->mining_weight : 1.0 }}">
+                                            </td>
+                                        </tr>
+
+                                        <!-- Tax/Bounty -->
+                                        <tr>
+                                            <td>
+                                                <strong>Tax/Bounty Contributions</strong>
+                                                <div class="small text-muted">Bounties and taxes paid to corp</div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <input type="radio" class="btn-check" name="tax_bounty_visibility" value="directors"
+                                                        {{ $setting && $setting->tax_bounty_visibility === 'directors' ? 'checked' : '' }}
+                                                        id="tax_directors_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="tax_directors_{{ $corp->corporation_id }}">Directors</label>
+
+                                                    <input type="radio" class="btn-check" name="tax_bounty_visibility" value="members"
+                                                        {{ $setting && $setting->tax_bounty_visibility === 'members' ? 'checked' : '' }}
+                                                        id="tax_members_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="tax_members_{{ $corp->corporation_id }}">Members</label>
+
+                                                    <input type="radio" class="btn-check" name="tax_bounty_visibility" value="both"
+                                                        {{ $setting && $setting->tax_bounty_visibility === 'both' ? 'checked' : '' }}
+                                                        id="tax_both_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="tax_both_{{ $corp->corporation_id }}">Both</label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm"
+                                                    name="tax_bounty_weight"
+                                                    value="{{ $setting ? $setting->tax_bounty_weight : 1.0 }}">
+                                            </td>
+                                        </tr>
+
+                                        <!-- PvP Activity -->
+                                        <tr>
+                                            <td>
+                                                <strong>PvP Activity</strong>
+                                                <div class="small text-muted">All kills and losses</div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <input type="radio" class="btn-check" name="pvp_visibility" value="directors"
+                                                        {{ $setting && $setting->pvp_visibility === 'directors' ? 'checked' : '' }}
+                                                        id="pvp_directors_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="pvp_directors_{{ $corp->corporation_id }}">Directors</label>
+
+                                                    <input type="radio" class="btn-check" name="pvp_visibility" value="members"
+                                                        {{ $setting && $setting->pvp_visibility === 'members' ? 'checked' : '' }}
+                                                        id="pvp_members_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="pvp_members_{{ $corp->corporation_id }}">Members</label>
+
+                                                    <input type="radio" class="btn-check" name="pvp_visibility" value="both"
+                                                        {{ $setting && $setting->pvp_visibility === 'both' ? 'checked' : '' }}
+                                                        id="pvp_both_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="pvp_both_{{ $corp->corporation_id }}">Both</label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm"
+                                                    name="pvp_weight"
+                                                    value="{{ $setting ? $setting->pvp_weight : 1.0 }}">
+                                            </td>
+                                        </tr>
+
+                                        <!-- Fleet Participation -->
+                                        <tr>
+                                            <td>
+                                                <strong>Fleet Participation</strong>
+                                                <div class="small text-muted">Kills with 5+ fleet members</div>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <input type="radio" class="btn-check" name="fleet_participation_visibility" value="directors"
+                                                        {{ $setting && $setting->fleet_participation_visibility === 'directors' ? 'checked' : '' }}
+                                                        id="fleet_directors_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="fleet_directors_{{ $corp->corporation_id }}">Directors</label>
+
+                                                    <input type="radio" class="btn-check" name="fleet_participation_visibility" value="members"
+                                                        {{ $setting && $setting->fleet_participation_visibility === 'members' ? 'checked' : '' }}
+                                                        id="fleet_members_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="fleet_members_{{ $corp->corporation_id }}">Members</label>
+
+                                                    <input type="radio" class="btn-check" name="fleet_participation_visibility" value="both"
+                                                        {{ $setting && $setting->fleet_participation_visibility === 'both' ? 'checked' : '' }}
+                                                        id="fleet_both_{{ $corp->corporation_id }}">
+                                                    <label class="btn btn-outline-secondary" for="fleet_both_{{ $corp->corporation_id }}">Both</label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm"
+                                                    name="fleet_participation_weight"
+                                                    value="{{ $setting ? $setting->fleet_participation_weight : 1.0 }}">
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <div class="row mt-3">
                                     <div class="col-md-12">
                                         <button type="submit" class="btn btn-primary">Save Settings</button>
                                     </div>

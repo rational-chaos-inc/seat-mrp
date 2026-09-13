@@ -11,23 +11,21 @@ class MemberRewardsSetting extends Model
     protected $fillable = [
         'corporation_id',
         'user_id',
-        'show_login_status',
-        'show_mining',
-        'show_tax_bounty',
-        'show_pvp',
-        'visibility_level',
+        'login_visibility',
+        'mining_visibility',
+        'tax_bounty_visibility',
+        'pvp_visibility',
+        'fleet_participation_visibility',
         'mining_weight',
         'tax_bounty_weight',
         'pvp_weight',
+        'fleet_participation_weight',
     ];
 
     protected $casts = [
-        'show_login_status' => 'boolean',
-        'show_mining' => 'boolean',
-        'show_tax_bounty' => 'boolean',
-        'show_pvp' => 'boolean',
         'mining_weight' => 'decimal:2',
         'tax_bounty_weight' => 'decimal:2',
         'pvp_weight' => 'decimal:2',
+        'fleet_participation_weight' => 'decimal:2',
     ];
 }

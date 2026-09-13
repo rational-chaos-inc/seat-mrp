@@ -16,7 +16,9 @@ class DailyMemberStat extends Model
         'mining_quantity',
         'mining_value',
         'tax_bounty_amount',
-        'pvp_kill_instances',
+        'pvp_kills',
+        'pvp_losses',
+        'fleet_participation',
     ];
 
     protected $casts = [
@@ -25,6 +27,8 @@ class DailyMemberStat extends Model
         'mining_quantity' => 'integer',
         'mining_value' => 'decimal:2',
         'tax_bounty_amount' => 'decimal:2',
-        'pvp_kill_instances' => 'integer',
+        'pvp_kills' => 'integer',
+        'pvp_losses' => 'integer',
+        'fleet_participation' => 'integer',
     ];
 }

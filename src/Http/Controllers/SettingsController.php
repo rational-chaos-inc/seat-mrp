@@ -28,14 +28,15 @@ class SettingsController
                     'user_id' => $user->id,
                 ],
                 [
-                    'show_login_status' => true,
-                    'show_mining' => true,
-                    'show_tax_bounty' => true,
-                    'show_pvp' => true,
-                    'visibility_level' => 'directors',
+                    'login_visibility' => 'directors',
+                    'mining_visibility' => 'directors',
+                    'tax_bounty_visibility' => 'directors',
+                    'pvp_visibility' => 'directors',
+                    'fleet_participation_visibility' => 'directors',
                     'mining_weight' => 1.0,
                     'tax_bounty_weight' => 1.0,
                     'pvp_weight' => 1.0,
+                    'fleet_participation_weight' => 1.0,
                 ]
             );
             $settings[$corp->corporation_id] = $setting;
@@ -57,14 +58,15 @@ class SettingsController
 
         $validated = $request->validate([
             'corporation_id' => 'required|integer',
-            'show_login_status' => 'boolean',
-            'show_mining' => 'boolean',
-            'show_tax_bounty' => 'boolean',
-            'show_pvp' => 'boolean',
-            'visibility_level' => 'required|in:directors,members,both',
+            'login_visibility' => 'required|in:directors,members,both',
+            'mining_visibility' => 'required|in:directors,members,both',
+            'tax_bounty_visibility' => 'required|in:directors,members,both',
+            'pvp_visibility' => 'required|in:directors,members,both',
+            'fleet_participation_visibility' => 'required|in:directors,members,both',
             'mining_weight' => 'required|numeric|min:0|max:10',
             'tax_bounty_weight' => 'required|numeric|min:0|max:10',
             'pvp_weight' => 'required|numeric|min:0|max:10',
+            'fleet_participation_weight' => 'required|numeric|min:0|max:10',
         ]);
 
         MemberRewardsSetting::updateOrCreate(
@@ -73,14 +75,15 @@ class SettingsController
                 'user_id' => $user->id,
             ],
             [
-                'show_login_status' => $request->boolean('show_login_status'),
-                'show_mining' => $request->boolean('show_mining'),
-                'show_tax_bounty' => $request->boolean('show_tax_bounty'),
-                'show_pvp' => $request->boolean('show_pvp'),
-                'visibility_level' => $validated['visibility_level'],
+                'login_visibility' => $validated['login_visibility'],
+                'mining_visibility' => $validated['mining_visibility'],
+                'tax_bounty_visibility' => $validated['tax_bounty_visibility'],
+                'pvp_visibility' => $validated['pvp_visibility'],
+                'fleet_participation_visibility' => $validated['fleet_participation_visibility'],
                 'mining_weight' => (float) $validated['mining_weight'],
                 'tax_bounty_weight' => (float) $validated['tax_bounty_weight'],
                 'pvp_weight' => (float) $validated['pvp_weight'],
+                'fleet_participation_weight' => (float) $validated['fleet_participation_weight'],
             ]
         );
 
