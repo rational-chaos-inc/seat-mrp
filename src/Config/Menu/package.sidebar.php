@@ -27,6 +27,12 @@ return [
                 'route' => 'member-rewards.director.index',
                 'permission' => 'member-rewards.view_all_activities',
             ],
+            [
+                'name' => 'Settings',
+                'icon' => 'fas fa-cog',
+                'route' => 'member-rewards.settings',
+                'permission' => 'member-rewards.view_all_activities',
+            ],
         ],
     ],
 ];
