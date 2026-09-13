@@ -22,6 +22,14 @@ class AggregationService
 
         $activities = $query->get();
 
+        // Get login data from corporation_member_trackings
+        $corpIds = $activities->pluck('corporation_id')->unique();
+        $loginData = DB::table('corporation_member_trackings')
+            ->whereIn('corporation_id', $corpIds)
+            ->whereBetween('logon_date', [$startOfDay, $endOfDay])
+            ->pluck('character_id')
+            ->toArray();
+
         // Group by corporation and character
         $grouped = $activities->groupBy(function ($activity) {
             return $activity->corporation_id . '|' . $activity->character_id;
@@ -35,7 +43,7 @@ class AggregationService
                 'date' => $date->toDateString(),
                 'corporation_id' => $corpId,
                 'character_id' => $charId,
-                'logged_in' => true, // Has activity = logged in
+                'logged_in' => in_array($charId, $loginData) || $groupedActivities->count() > 0,
                 'mining_quantity' => 0,
                 'mining_value' => 0,
                 'tax_bounty_amount' => 0,
